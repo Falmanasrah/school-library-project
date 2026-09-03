@@ -823,7 +823,12 @@ class App {
     sunday.setDate(today.getDate() - today.getDay());
     return [0,1,2,3,4].map(i => { const d = new Date(sunday); d.setDate(sunday.getDate() + i); return d; });
   }
-  dateKey(d) { return d.toISOString().split('T')[0]; }
+  dateKey(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
   todayKey() { return this.dateKey(new Date()); }
   findBooking(dateKey, period) { return this.bookings.find(b => b.library === this.library && b.date === dateKey && b.period === period); }
   fmtDate(dateKey) {
