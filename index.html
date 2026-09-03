@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Library Booking</title>
+<meta name="theme-color" content="#0f5d8a" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<style>
+  :root {
+    --brand: #0f5d8a;
+    --brand-dark: #0a4a6b;
+    --brand-light: #e6f1fb;
+    --green: #1a9d5c;
+    --green-bg: #e3f7ec;
+    --green-border: #7fd4a6;
+    --red: #c0392b;
+    --red-bg: #fdeceb;
+    --red-border: #f0a79e;
+    --amber-bg: #fff8e6;
+    --ink: #14202b;
+    --ink-soft: #5b6b78;
+    --ink-faint: #93a1ac;
+    --line: #e4e9ee;
+    --line-strong: #ccd6de;
+    --surface: #ffffff;
+    --page: #f4f7f9;
+    --break-a: #f1eee6;
+    --break-b: #ece7db;
+    --break-ink: #8a7a4f;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(20,32,43,0.04), 0 4px 16px rgba(20,32,43,0.06);
+    --shadow-lg: 0 8px 30px rgba(20,32,43,0.18);
+  }
+  [data-theme="dark"] {
+    --brand: #2f8fc7;
+    --brand-dark: #256f9c;
+    --brand-light: #16344a;
+    --green: #3bd489;
+    --green-bg: #10322a;
+    --green-border: #1f6b4e;
+    --red: #ff6b5e;
+    --red-bg: #3a1c1c;
+    --red-border: #7a352f;
+    --amber-bg: #3a301a;
+    --ink: #eef2f5;
+    --ink-soft: #a8b5bf;
+    --ink-faint: #6f7c86;
+    --line: #253038;
+    --line-strong: #333f48;
+    --surface: #1a2229;
+    --page: #10161b;
+    --break-a: #2a2620;
+    --break-b: #2f2a22;
+    --break-ink: #c7b57e;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.4);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.55);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  html[dir="rtl"] body { font-family: "Segoe UI", Tahoma, Arial, sans-serif; }
+  #app { max-width: 720px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 40px; }
+
+  /* ---------- TOP UTILITY BAR (lang + theme, visible everywhere) ---------- */
+  .util-bar { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 16px 0; }
+  .util-btn { display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 20px; border: 1.5px solid var(--line-strong); background: var(--surface); color: var(--ink); font-size: 12.5px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow); }
+  .util-btn:active { transform: scale(0.96); }
+
+  /* ---------- LOGIN ---------- */
+  .login-wrap { min-height: calc(100vh - 52px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 20px 32px; }
+  .login-card { width: 100%; max-width: 380px; background: var(--surface); border-radius: 18px; box-shadow: var(--shadow-lg); padding: 32px 26px; }
+  .login-logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px; }
+  .login-card h1 { font-size: 19px; font-weight: 600; margin: 0; text-align: center; }
+  .login-card p.sub { font-size: 13px; color: var(--ink-soft); text-align: center; margin: 4px 0 22px; }
+  .fg { margin-bottom: 14px; }
+  .fg label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin-bottom: 6px; }
+  .fg input, .fg select { width: 100%; height: 46px; padding: 0 14px; border-radius: 12px; border: 1.5px solid var(--line-strong); font-size: 15px; color: var(--ink); background: var(--page); }
+  .fg input:focus { outline: none; border-color: var(--brand); background: var(--surface); }
+  .field-err { color: var(--red); font-size: 12px; margin: -8px 0 12px; display: none; }
+  .login-btn { width: 100%; height: 48px; border-radius: 12px; border: none; background: var(--brand); color: white; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 4px; }
+  .login-btn:active { background: var(--brand-dark); }
+
+  .test-toggle { text-align: center; margin-top: 18px; font-size: 12.5px; color: var(--brand); cursor: pointer; text-decoration: underline; }
+  .test-panel { margin-top: 14px; border-top: 1px dashed var(--line-strong); padding-top: 14px; display: none; }
+  .test-panel.show { display: block; }
+  .test-panel .hint { font-size: 11.5px; color: var(--ink-faint); margin: 0 0 10px; }
+  .test-user { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; cursor: pointer; background: var(--page); }
+  .test-user:active { background: var(--brand-light); }
+  .test-user .tu-name { font-size: 13px; font-weight: 600; }
+  .test-user .tu-pass { font-size: 11.5px; color: var(--ink-faint); font-family: monospace; }
+
+  /* ---------- APP SHELL ---------- */
+  header.top { position: sticky; top: 0; z-index: 20; background: var(--brand); color: white; padding: 16px 20px 14px; box-shadow: var(--shadow); }
+  header.top .brand-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  header.top .brand-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  header.top h1 { font-size: 17px; font-weight: 600; margin: 0; letter-spacing: -0.2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  header.top p.sub { margin: 2px 0 0; font-size: 11.5px; opacity: 0.85; }
+  .sync-pill { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.15); padding: 5px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #7fe0a6; }
+  .sync-dot.busy { background: #f0c750; animation: pulse 1s infinite ease-in-out; }
+  .sync-dot.err { background: #f08a7a; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .header-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .icon-btn { background: rgba(255,255,255,0.15); border: none; color: white; font-size: 11.5px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+
+  .conn-banner { display: none; align-items: center; gap: 8px; justify-content: center; background: #7a2a1f; color: #fdeceb; font-size: 12.5px; font-weight: 500; padding: 8px 12px; }
+  .conn-banner.show { display: flex; }
+
+  .tabs-row { display: flex; gap: 10px; margin: 16px 20px 0; }
+  .lib-tab { flex: 1; padding: 14px 10px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line); text-align: center; cursor: pointer; transition: all 0.15s ease; box-shadow: var(--shadow); }
+  .lib-tab .t1 { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .lib-tab .t2 { font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; }
+  .lib-tab.active { border-color: var(--brand); background: var(--brand-light); }
+  .lib-tab.active .t1 { color: var(--brand); }
+  .lib-tab.active .t2 { color: var(--brand); }
+
+  .week-row { display: flex; align-items: center; justify-content: space-between; margin: 18px 20px 10px; }
+  .week-row .label { font-size: 15px; font-weight: 600; }
+  .week-nav { display: flex; gap: 6px; }
+  .week-nav button { width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink-soft); box-shadow: var(--shadow); }
+  .week-nav button:active { transform: scale(0.94); }
+  html[dir="rtl"] .week-nav .flip { transform: scaleX(-1); }
+
+  .grid-card { margin: 0 20px; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--line); position: relative; }
+  .grid-scroll { overflow-x: auto; }
+  .grid-loading { position: absolute; inset: 0; background: color-mix(in srgb, var(--surface) 80%, transparent); display: flex; align-items: center; justify-content: center; font-size: 12.5px; color: var(--ink-soft); font-weight: 500; opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
+  .grid-loading.show { opacity: 1; }
+  table.tt { border-collapse: collapse; width: 100%; min-width: 620px; }
+  table.tt th { background: var(--page); font-size: 11px; font-weight: 600; color: var(--ink-soft); padding: 10px 2px; border-bottom: 1.5px solid var(--line-strong); border-right: 1px solid var(--line); width: 66px; }
+  table.tt th:first-child { width: 50px; border-right: 1.5px solid var(--line-strong); }
+  table.tt th:last-child { border-right: none; }
+  th.break-head { background: var(--break-a); color: var(--break-ink); }
+  td.day-cell { background: var(--page); font-size: 12px; font-weight: 600; color: var(--ink); padding: 4px 2px; border-right: 1.5px solid var(--line-strong); border-bottom: 1px solid var(--line); text-align: center; vertical-align: middle; }
+  td.day-cell .date-num { display: block; font-size: 10px; font-weight: 400; color: var(--ink-faint); margin-top: 1px; }
+  td.day-cell.today { background: var(--brand-light); }
+  td.day-cell.today .date-num { color: var(--brand); font-weight: 600; }
+
+  td.slot { height: 56px; text-align: center; vertical-align: middle; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); cursor: pointer; position: relative; transition: background 0.12s ease; font-size: 10px; font-weight: 600; padding: 2px; }
+  td.slot:last-child { border-right: none; }
+  td.slot.available:active { background: var(--brand-light); }
+  td.slot.available .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--line-strong); margin: 0 auto; }
+  td.slot.selecting { background: var(--green-bg); box-shadow: inset 0 0 0 2px var(--green); }
+  td.slot.mine { background: var(--green-bg); color: var(--green); cursor: default; }
+  td.slot.other { background: var(--red-bg); color: var(--red); cursor: not-allowed; }
+  td.slot .slot-time { display: block; font-size: 9px; }
+  td.slot .slot-name { display: block; font-size: 9.5px; opacity: 0.85; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 3px; font-weight: 500; }
+  td.slot.break-cell { background: repeating-linear-gradient(45deg, var(--break-a), var(--break-a) 6px, var(--break-b) 6px, var(--break-b) 12px); color: var(--break-ink); cursor: default; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; }
+
+  .legend { display: flex; justify-content: center; gap: 14px; margin: 14px 20px 0; font-size: 11.5px; color: var(--ink-soft); flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 14px; height: 14px; border-radius: 4px; }
+
+  .section { margin: 26px 20px 0; }
+  .section h2 { font-size: 15px; font-weight: 600; margin: 0 0 10px; }
+  .booking-row { display: flex; justify-content: space-between; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; box-shadow: var(--shadow); }
+  .booking-row .info { display: flex; flex-direction: column; gap: 2px; }
+  .booking-row .lib-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--brand); }
+  .booking-row .when { font-size: 13.5px; font-weight: 600; }
+  .booking-row .period { font-size: 12px; color: var(--ink-soft); }
+  .booking-row button { border: none; background: var(--red-bg); color: var(--red); font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 9px; cursor: pointer; }
+  .empty-note { text-align: center; color: var(--ink-faint); font-size: 13px; padding: 24px 10px; background: var(--surface); border-radius: 12px; border: 1px dashed var(--line-strong); }
+
+  .clear-link { display: block; text-align: center; margin: 30px 20px 0; font-size: 12.5px; color: var(--ink-faint); text-decoration: underline; cursor: pointer; }
+  .foot-note { text-align: center; margin: 10px 20px 0; font-size: 11px; color: var(--ink-faint); }
+
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+  .overlay.show { opacity: 1; pointer-events: all; }
+  .sheet { background: var(--surface); width: 100%; max-width: 480px; border-radius: 22px 22px 0 0; padding: 24px 22px 28px; transform: translateY(20px); transition: transform 0.25s ease; box-shadow: var(--shadow-lg); }
+  .overlay.show .sheet { transform: translateY(0); }
+  .sheet-handle { width: 36px; height: 4px; background: var(--line-strong); border-radius: 4px; margin: 0 auto 18px; }
+  .sheet h2 { font-size: 17px; font-weight: 600; margin: 0 0 4px; }
+  .sheet p.sub { font-size: 13px; color: var(--ink-soft); margin: 0 0 18px; }
+  .two-col { display: flex; gap: 10px; }
+  .two-col .fg { flex: 1; }
+  .sheet-btns { display: flex; gap: 10px; margin-top: 6px; }
+  .sheet-btns button { flex: 1; height: 48px; border-radius: 12px; font-size: 14.5px; font-weight: 600; cursor: pointer; border: none; }
+  .sheet-btns .cancel { background: var(--page); color: var(--ink); border: 1.5px solid var(--line-strong); }
+  .sheet-btns .confirm { background: var(--brand); color: white; }
+  .sheet-btns .confirm:disabled { opacity: 0.6; }
+
+  .confirm-box { background: var(--page); border-radius: 14px; padding: 16px; margin-bottom: 18px; }
+  .confirm-box .row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 5px 0; }
+  .confirm-box .row span:first-child { color: var(--ink-soft); }
+  .confirm-box .row span:last-child { font-weight: 600; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--page); font-size: 13.5px; font-weight: 500; padding: 12px 20px; border-radius: 30px; box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none; transition: all 0.25s ease; z-index: 200; display: flex; align-items: center; gap: 8px; white-space: nowrap; max-width: 88vw; overflow: hidden; text-overflow: ellipsis; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.err { background: var(--red); color: white; }
+
+  /* ---------- INSTALL PROMPT ---------- */
+  .install-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+    display: none; align-items: center; justify-content: center; gap: 10px;
+    background: var(--surface); border-top: 1px solid var(--line);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+  }
+  .install-bar.show { display: flex; }
+  .install-bar span { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .install-bar button { height: 34px; padding: 0 16px; border-radius: 18px; border: none; background: var(--brand); color: white; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  #app, #loginView { padding-bottom: 54px; }
+
+  .install-icons { display: flex; justify-content: center; gap: 22px; margin: 4px 0 18px; }
+  .install-icon-item { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-soft); }
+  .install-icon-item .circle { width: 44px; height: 44px; border-radius: 50%; background: var(--brand-light); display: flex; align-items: center; justify-content: center; color: var(--brand); }
+  .ios-steps { background: var(--page); border-radius: 12px; padding: 14px 16px; font-size: 13px; color: var(--ink); line-height: 1.6; margin-bottom: 16px; }
+  .ios-steps b { color: var(--brand); }
+</style>
+</head>
+<body>
+
+<div class="util-bar">
+  <button class="util-btn" id="langToggle">EN / ع</button>
+  <button class="util-btn" id="themeToggle">🌙</button>
+</div>
+
+<!-- ================= LOGIN VIEW ================= -->
+<div id="loginView" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    </div>
+    <h1 data-i="loginTitle">Library booking</h1>
+    <p class="sub" data-i="loginSub">Sign in with your staff account</p>
+
+    <div class="fg">
+      <label data-i="nameLabel">Name</label>
+      <input type="text" id="loginUser" autocomplete="off" />
+    </div>
+    <div class="fg">
+      <label data-i="passLabel">Password</label>
+      <input type="password" id="loginPass" autocomplete="off" />
+    </div>
+    <p class="field-err" id="loginErr" data-i="loginErr">Name or password is incorrect</p>
+    <button class="login-btn" id="loginBtn" data-i="signIn">Sign in</button>
+
+    <div class="test-toggle" id="testToggle" data-i="showTest">Show test accounts</div>
+    <div class="test-panel" id="testPanel">
+      <p class="hint" data-i="testHint">For testing only — tap an account to sign in instantly.</p>
+      <div id="testUserList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP VIEW ================= -->
+<div id="app" style="display:none;">
+
+  <div class="conn-banner" id="connBanner" data-i="connBanner">No internet connection — bookings can't sync right now</div>
+
+  <header class="top">
+    <div class="brand-row">
+      <div class="brand-left">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" style="flex-shrink:0;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <div style="min-width:0;">
+          <h1 id="headerName">Library booking</h1>
+          <p class="sub" data-i="headerSub">Shared calendar — every teacher sees the same bookings</p>
+        </div>
+      </div>
+      <div class="header-btns">
+        <div class="sync-pill"><div class="sync-dot" id="syncDot"></div><span id="syncLabel" data-i="synced">Synced</span></div>
+        <button class="icon-btn" id="logoutBtn" data-i="signOut">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs-row" id="libTabs"></div>
+
+  <div class="week-row">
+    <span class="label" id="weekLabel">This week</span>
+    <div class="week-nav">
+      <button id="prevWeek" aria-label="Previous week"><svg class="flip" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <button id="nextWeek" aria-label="Next week"><svg class="flip" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg></button>
+    </div>
+  </div>
+
+  <div class="grid-card">
+    <div class="grid-loading" id="gridLoading" data-i="loadingBookings">Loading bookings…</div>
+    <div class="grid-scroll"><table class="tt" id="ttTable"></table></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--page);border:1px solid var(--line-strong);"></div><span data-i="legendOpen">Open</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--green-bg);border:1px solid var(--green-border);"></div><span data-i="legendMine">Your booking</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--red-bg);border:1px solid var(--red-border);"></div><span data-i="legendBooked">Booked</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--break-a);"></div><span data-i="legendBreak">Break</span></div>
+  </div>
+
+  <div class="section">
+    <h2 data-i="yourBookings">Your bookings</h2>
+    <div id="myList"></div>
+  </div>
+
+  <span class="clear-link" id="clearAll" data-i="clearAll">Clear all bookings (testing)</span>
+  <p class="foot-note" data-i="footNote">Bookings end automatically once the leaving time passes, freeing the slot again.</p>
+
+</div>
+
+<div class="overlay" id="overlay"><div class="sheet" id="sheetContent"></div></div>
+<div class="overlay" id="installOverlay"><div class="sheet" id="installSheetContent"></div></div>
+<div class="toast" id="toast"></div>
+
+<div class="install-bar" id="installBar">
+  <span data-i="installBarText">Get this as an app on your device</span>
+  <button id="installBarBtn" data-i="installBarBtn">Install</button>
+</div>
+
+<script type="module">
+/* =========================================================
+   FIREBASE CONFIG — paste the block from Firebase console
+   (Project settings → Your apps → web app config)
+   ========================================================= */
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import {
+  getFirestore, collection, doc, onSnapshot,
+  runTransaction, deleteDoc, getDocs, Timestamp
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyAQPy4xH2E8rUNGlCSKQFoOlyjydwEdI2I',
+  authDomain: 'school-library-project-b83ac.firebaseapp.com',
+  projectId: 'school-library-project-b83ac',
+  storageBucket: 'school-library-project-b83ac.firebasestorage.app',
+  messagingSenderId: '274240349462',
+  appId: '1:274240349462:web:3db19a62a300a1e7b31c37'
+};
+
+const firebaseApp = initializeApp(FIREBASE_CONFIG);
+const db = getFirestore(firebaseApp);
+const BOOKINGS_COL = 'bookings';
+
+/* =========================================================
+   STAFF ACCOUNTS — edit names / passwords as needed
+   ========================================================= */
+const USERS = [
+  { name: 'Mrs. Sarah Al-Qahtani', password: 'sarah123' },
+  { name: 'Mrs. Fatima Al-Rashid', password: 'fatima123' },
+  { name: 'Mr. Ahmed Al-Otaibi',   password: 'ahmed123' },
+  { name: 'Mrs. Noura Al-Harbi',   password: 'noura123' },
+  { name: 'Mr. Khalid Al-Mutairi', password: 'khalid123' }
+];
+
+/* =========================================================
+   TRANSLATIONS
+   ========================================================= */
+const I18N = {
+  en: {
+    loginTitle: 'Library booking',
+    loginSub: 'Sign in with your staff account',
+    nameLabel: 'Name',
+    passLabel: 'Password',
+    namePlaceholder: 'e.g. Mrs. Sarah Al-Qahtani',
+    passPlaceholder: 'Password',
+    loginErr: 'Name or password is incorrect',
+    signIn: 'Sign in',
+    showTest: 'Show test accounts',
+    hideTest: 'Hide test accounts',
+    testHint: 'For testing only — tap an account to sign in instantly.',
+    headerSub: 'Shared calendar — every teacher sees the same bookings',
+    connBanner: "No internet connection — bookings can't sync right now",
+    synced: 'Synced',
+    syncing: 'Syncing…',
+    offline: 'Offline',
+    signOut: 'Sign out',
+    juniorLib: 'Junior library',
+    juniorLibSub: 'Below grade 7',
+    seniorLib: 'Senior library',
+    seniorLibSub: 'Grade 7 and up',
+    thisWeek: 'This week',
+    weekAhead: (n) => `${n} week${n>1?'s':''} ahead`,
+    weekAgo: (n) => `${n} week${n>1?'s':''} ago`,
+    loadingBookings: 'Loading bookings…',
+    legendOpen: 'Open',
+    legendMine: 'Your booking',
+    legendBooked: 'Booked',
+    legendBreak: 'Break',
+    yourBookings: 'Your bookings',
+    noBookings: 'No bookings yet in this library.',
+    clearAll: 'Clear all bookings (testing)',
+    footNote: 'Bookings end automatically once the leaving time passes, freeing the slot again.',
+    breakLabel: 'Break',
+    you: 'You',
+    bookPeriod: (p) => `Book period ${p}`,
+    arrivingAt: 'Arriving at',
+    leavingAt: 'Leaving at',
+    timeErr: 'Enter both times, with leaving after arriving',
+    cancel: 'Cancel',
+    continueBtn: 'Continue',
+    confirmBooking: 'Confirm booking',
+    confirmSub: 'Other teachers will see this once confirmed.',
+    library: 'Library',
+    date: 'Date',
+    period: 'Period',
+    arriving: 'Arriving',
+    leaving: 'Leaving',
+    bookedBy: 'Booked by',
+    goBack: 'Go back',
+    yesBookIt: 'Yes, book it',
+    booking: 'Booking…',
+    arrivesLeaves: (a,l) => `Arrives ${a} · Leaves ${l}`,
+    periodBookedBy: (p,name) => `Period ${p} · Booked by ${name}`,
+    remove: 'Remove',
+    needInternet: 'You need an internet connection to book',
+    ghReadErr: 'Could not connect. Check your internet connection.',
+    ghWriteErr: 'Could not save booking. Check your connection.',
+    ghRemoveErr: 'Could not remove booking. Check your connection.',
+    ghClearErr: 'Could not clear bookings. Check your connection.',
+    clashErr: 'Someone just booked this slot',
+    periodBooked: 'Period booked',
+    bookingRemoved: 'Booking removed',
+    allCleared: 'All bookings cleared',
+    clearConfirm: 'Remove every booking in both libraries? This cannot be undone.',
+    days: ['Sun','Mon','Tue','Wed','Thu'],
+    dateLocale: 'en-US',
+    installBarText: 'Get this as an app on your device',
+    installBarBtn: 'Install',
+    installTitle: 'Install this app',
+    installBody: 'Add Library Booking to your home screen — on phone, tablet, or computer — for quick access, just like a regular app.',
+    installIconPc: 'Computer',
+    installIconAndroid: 'Android',
+    installIconIos: 'iPhone / iPad',
+    installNow: 'Install now',
+    notNow: 'Not now',
+    iosStepsTitle: 'Install on iPhone or iPad',
+    iosStepsBody: 'Tap the <b>Share</b> icon in Safari (the square with an arrow), then choose <b>"Add to Home Screen"</b>.',
+    fallbackStepsBody: 'Open your browser menu and choose "Install app" or "Add to Home screen".',
+    gotIt: 'Got it'
+  },
+  ar: {
+    loginTitle: 'حجز المكتبة',
+    loginSub: 'سجّل الدخول بحساب الموظف الخاص بك',
+    nameLabel: 'الاسم',
+    passLabel: 'كلمة المرور',
+    namePlaceholder: 'مثال: الأستاذة سارة القحطاني',
+    passPlaceholder: 'كلمة المرور',
+    loginErr: 'الاسم أو كلمة المرور غير صحيحة',
+    signIn: 'تسجيل الدخول',
+    showTest: 'إظهار الحسابات التجريبية',
+    hideTest: 'إخفاء الحسابات التجريبية',
+    testHint: 'للاختبار فقط — اضغط على أي حساب لتسجيل الدخول فورًا.',
+    headerSub: 'تقويم مشترك — يراه جميع المعلمين',
+    connBanner: 'لا يوجد اتصال بالإنترنت — لا يمكن مزامنة الحجوزات الآن',
+    synced: 'تمت المزامنة',
+    syncing: 'جارٍ المزامنة…',
+    offline: 'غير متصل',
+    signOut: 'تسجيل الخروج',
+    juniorLib: 'المكتبة الابتدائية',
+    juniorLibSub: 'أقل من الصف السابع',
+    seniorLib: 'مكتبة المرحلة المتوسطة والثانوية',
+    seniorLibSub: 'الصف السابع فما فوق',
+    thisWeek: 'هذا الأسبوع',
+    weekAhead: (n) => `بعد ${n} ${n===1?'أسبوع':'أسابيع'}`,
+    weekAgo: (n) => `قبل ${n} ${n===1?'أسبوع':'أسابيع'}`,
+    loadingBookings: 'جارٍ تحميل الحجوزات…',
+    legendOpen: 'متاح',
+    legendMine: 'حجزك',
+    legendBooked: 'محجوز',
+    legendBreak: 'استراحة',
+    yourBookings: 'حجوزاتك',
+    noBookings: 'لا توجد حجوزات بعد في هذه المكتبة.',
+    clearAll: 'مسح جميع الحجوزات (للاختبار)',
+    footNote: 'تنتهي الحجوزات تلقائيًا بعد انقضاء وقت المغادرة، ليصبح الموعد متاحًا من جديد.',
+    breakLabel: 'استراحة',
+    you: 'أنت',
+    bookPeriod: (p) => `حجز الحصة ${p}`,
+    arrivingAt: 'وقت الوصول',
+    leavingAt: 'وقت المغادرة',
+    timeErr: 'أدخل الوقتين، على أن يكون وقت المغادرة بعد وقت الوصول',
+    cancel: 'إلغاء',
+    continueBtn: 'متابعة',
+    confirmBooking: 'تأكيد الحجز',
+    confirmSub: 'سيظهر هذا الحجز لبقية المعلمين بعد التأكيد.',
+    library: 'المكتبة',
+    date: 'التاريخ',
+    period: 'الحصة',
+    arriving: 'الوصول',
+    leaving: 'المغادرة',
+    bookedBy: 'حجزه',
+    goBack: 'رجوع',
+    yesBookIt: 'نعم، احجز',
+    booking: 'جارٍ الحجز…',
+    arrivesLeaves: (a,l) => `الوصول ${a} · المغادرة ${l}`,
+    periodBookedBy: (p,name) => `الحصة ${p} · حجزه ${name}`,
+    remove: 'إزالة',
+    needInternet: 'تحتاج إلى اتصال بالإنترنت لإتمام الحجز',
+    ghReadErr: 'تعذر الاتصال. تحقق من اتصالك بالإنترنت.',
+    ghWriteErr: 'تعذر حفظ الحجز. تحقق من اتصالك بالإنترنت.',
+    ghRemoveErr: 'تعذر إلغاء الحجز. تحقق من اتصالك بالإنترنت.',
+    ghClearErr: 'تعذر مسح الحجوزات. تحقق من اتصالك بالإنترنت.',
+    clashErr: 'قام معلم آخر بحجز هذا الموعد للتو',
+    periodBooked: 'تم حجز الحصة',
+    bookingRemoved: 'تم إلغاء الحجز',
+    allCleared: 'تم مسح جميع الحجوزات',
+    clearConfirm: 'هل تريد حذف جميع الحجوزات في كلا المكتبتين؟ لا يمكن التراجع عن هذا الإجراء.',
+    days: ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],
+    dateLocale: 'ar-SA-u-nu-latn',
+    installBarText: 'ثبّت هذا كتطبيق على جهازك',
+    installBarBtn: 'تثبيت',
+    installTitle: 'تثبيت التطبيق',
+    installBody: 'أضف تطبيق حجز المكتبة إلى شاشتك الرئيسية — على الهاتف أو الجهاز اللوحي أو الحاسوب — للوصول السريع، تمامًا مثل أي تطبيق عادي.',
+    installIconPc: 'حاسوب',
+    installIconAndroid: 'أندرويد',
+    installIconIos: 'آيفون / آيباد',
+    installNow: 'تثبيت الآن',
+    notNow: 'ليس الآن',
+    iosStepsTitle: 'التثبيت على آيفون أو آيباد',
+    iosStepsBody: 'اضغط على أيقونة <b>المشاركة</b> في سفاري (المربع الذي عليه سهم)، ثم اختر <b>«إضافة إلى الشاشة الرئيسية»</b>.',
+    fallbackStepsBody: 'افتح قائمة المتصفح واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».',
+    gotIt: 'حسنًا'
+  }
+};
+
+const PERIODS_A = [1,2,3];
+const PERIODS_B = [4,5,6,7];
+
+class App {
+  constructor() {
+    this.currentUser = null;
+    this.library = 'junior';
+    this.weekOffset = 0;
+    this.pending = null;
+    this.bookings = [];
+    this.unsubscribe = null;
+    this.online = navigator.onLine;
+    this.lang = localStorage.getItem('langPref') || 'en';
+    this.theme = localStorage.getItem('themePref') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    this.applyTheme();
+    this.applyLang();
+    this.bindUtilBar();
+    this.bindLogin();
+    this.initInstallPrompt();
+  }
+
+  t(key, ...args) {
+    const val = I18N[this.lang][key];
+    return typeof val === 'function' ? val(...args) : val;
+  }
+
+  applyTheme() {
+    document.documentElement.setAttribute('data-theme', this.theme);
+    document.getElementById('themeToggle').textContent = this.theme === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('themePref', this.theme);
+  }
+
+  applyLang() {
+    document.documentElement.setAttribute('lang', this.lang);
+    document.documentElement.setAttribute('dir', this.lang === 'ar' ? 'rtl' : 'ltr');
+    localStorage.setItem('langPref', this.lang);
+    document.querySelectorAll('[data-i]').forEach(el => {
+      const key = el.getAttribute('data-i');
+      const val = this.t(key);
+      if (typeof val === 'string') el.textContent = val;
+    });
+    document.getElementById('loginUser').placeholder = this.t('namePlaceholder');
+    document.getElementById('loginPass').placeholder = this.t('passPlaceholder');
+    this.renderTestList();
+    if (this.currentUser) {
+      this.renderLibTabs();
+      this.renderGrid();
+      this.renderMyList();
+      this.setSyncState(this.online ? 'ok' : 'err');
+    }
+  }
+
+  /* ---------------- INSTALL PROMPT ---------------- */
+  isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+  isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  }
+
+  initInstallPrompt() {
+    if (this.isStandalone()) return; // already installed, never show anything
+
+    this.deferredPrompt = null;
+    document.getElementById('installBar').classList.add('show');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      this.deferredPrompt = e;
+    });
+    window.addEventListener('appinstalled', () => {
+      this.deferredPrompt = null;
+      document.getElementById('installBar').classList.remove('show');
+      document.getElementById('installOverlay').classList.remove('show');
+    });
+
+    document.getElementById('installBarBtn').addEventListener('click', () => this.openInstallSheet());
+
+    const alreadyPrompted = localStorage.getItem('installPromptSeen');
+    if (!alreadyPrompted) {
+      setTimeout(() => this.openInstallSheet(true), 900);
+    }
+  }
+
+  openInstallSheet(isAuto) {
+    const ios = this.isIOS();
+    const content = document.getElementById('installSheetContent');
+
+    if (ios) {
+      content.innerHTML = `
+        <div class="sheet-handle"></div>
+        <h2>${this.t('iosStepsTitle')}</h2>
+        <p class="sub">${this.t('installBody')}</p>
+        <div class="ios-steps">${this.t('iosStepsBody')}</div>
+        <div class="sheet-btns">
+          <button class="confirm" id="installGotIt" style="flex:1;">${this.t('gotIt')}</button>
+        </div>
+      `;
+    } else {
+      content.innerHTML = `
+        <div class="sheet-handle"></div>
+        <h2>${this.t('installTitle')}</h2>
+        <p class="sub">${this.t('installBody')}</p>
+        <div class="install-icons">
+          <div class="install-icon-item"><div class="circle">💻</div>${this.t('installIconPc')}</div>
+          <div class="install-icon-item"><div class="circle">🤖</div>${this.t('installIconAndroid')}</div>
+          <div class="install-icon-item"><div class="circle">📱</div>${this.t('installIconIos')}</div>
+        </div>
+        <div class="sheet-btns">
+          <button class="cancel" id="installNotNow">${this.t('notNow')}</button>
+          <button class="confirm" id="installNowBtn">${this.t('installNow')}</button>
+        </div>
+      `;
+    }
+
+    document.getElementById('installOverlay').classList.add('show');
+    localStorage.setItem('installPromptSeen', '1');
+
+    if (ios) {
+      document.getElementById('installGotIt').addEventListener('click', () => this.closeInstallSheet());
+    } else {
+      document.getElementById('installNotNow').addEventListener('click', () => this.closeInstallSheet());
+      document.getElementById('installNowBtn').addEventListener('click', async () => {
+        if (this.deferredPrompt) {
+          this.deferredPrompt.prompt();
+          const choice = await this.deferredPrompt.userChoice;
+          this.deferredPrompt = null;
+          this.closeInstallSheet();
+        } else {
+          document.getElementById('installSheetContent').innerHTML = `
+            <div class="sheet-handle"></div>
+            <h2>${this.t('installTitle')}</h2>
+            <div class="ios-steps">${this.t('fallbackStepsBody')}</div>
+            <div class="sheet-btns"><button class="confirm" id="installGotIt2" style="flex:1;">${this.t('gotIt')}</button></div>
+          `;
+          document.getElementById('installGotIt2').addEventListener('click', () => this.closeInstallSheet());
+        }
+      });
+    }
+  }
+
+  closeInstallSheet() {
+    document.getElementById('installOverlay').classList.remove('show');
+  }
+
+  bindUtilBar() {
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      this.theme = this.theme === 'dark' ? 'light' : 'dark';
+      this.applyTheme();
+    });
+    document.getElementById('langToggle').addEventListener('click', () => {
+      this.lang = this.lang === 'en' ? 'ar' : 'en';
+      this.applyLang();
+    });
+  }
+
+  /* ---------------- LOGIN ---------------- */
+  renderTestList() {
+    const testList = document.getElementById('testUserList');
+    testList.innerHTML = USERS.map(u => `
+      <div class="test-user" data-name="${u.name}" data-pass="${u.password}">
+        <span class="tu-name">${u.name}</span>
+        <span class="tu-pass">${u.password}</span>
+      </div>
+    `).join('');
+    testList.querySelectorAll('.test-user').forEach(el => {
+      el.addEventListener('click', () => {
+        document.getElementById('loginUser').value = el.dataset.name;
+        document.getElementById('loginPass').value = el.dataset.pass;
+        this.tryLogin();
+      });
+    });
+    const toggle = document.getElementById('testToggle');
+    const panel = document.getElementById('testPanel');
+    toggle.textContent = panel.classList.contains('show') ? this.t('hideTest') : this.t('showTest');
+  }
+
+  bindLogin() {
+    this.renderTestList();
+    document.getElementById('testToggle').addEventListener('click', () => {
+      const panel = document.getElementById('testPanel');
+      panel.classList.toggle('show');
+      document.getElementById('testToggle').textContent = panel.classList.contains('show') ? this.t('hideTest') : this.t('showTest');
+    });
+    document.getElementById('loginBtn').addEventListener('click', () => this.tryLogin());
+    document.getElementById('loginPass').addEventListener('keydown', (e) => { if (e.key === 'Enter') this.tryLogin(); });
+  }
+
+  tryLogin() {
+    const name = document.getElementById('loginUser').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    const match = USERS.find(u => u.name.toLowerCase() === name.toLowerCase() && u.password === pass);
+    if (!match) {
+      document.getElementById('loginErr').style.display = 'block';
+      return;
+    }
+    document.getElementById('loginErr').style.display = 'none';
+    this.currentUser = match.name;
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('headerName').textContent = match.name;
+    this.startApp();
+  }
+
+  logout() {
+    this.currentUser = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('loginView').style.display = 'flex';
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    if (this.unsubscribe) { this.unsubscribe(); this.unsubscribe = null; }
+  }
+
+  /* ---------------- APP INIT ---------------- */
+  startApp() {
+    this.bindStatic();
+    this.renderLibTabs();
+    this.bindConnectivity();
+    this.startListening();
+  }
+
+  bindConnectivity() {
+    window.addEventListener('online', () => { this.online = true; this.updateConnBanner(); this.setSyncState('ok'); });
+    window.addEventListener('offline', () => { this.online = false; this.updateConnBanner(); this.setSyncState('err'); });
+    this.updateConnBanner();
+  }
+
+  updateConnBanner() { document.getElementById('connBanner').classList.toggle('show', !this.online); }
+
+  setSyncState(state) {
+    const dot = document.getElementById('syncDot');
+    const label = document.getElementById('syncLabel');
+    dot.className = 'sync-dot';
+    if (state === 'busy') { dot.classList.add('busy'); label.textContent = this.t('syncing'); }
+    else if (state === 'err') { dot.classList.add('err'); label.textContent = this.t('offline'); }
+    else { label.textContent = this.t('synced'); }
+  }
+
+  bindStatic() {
+    document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
+    document.getElementById('prevWeek').addEventListener('click', () => { this.weekOffset -= 7; this.renderGrid(); });
+    document.getElementById('nextWeek').addEventListener('click', () => { this.weekOffset += 7; this.renderGrid(); });
+    document.getElementById('clearAll').addEventListener('click', () => this.clearAll());
+  }
+
+  renderLibTabs() {
+    const tabs = document.getElementById('libTabs');
+    tabs.innerHTML = `
+      <div class="lib-tab ${this.library==='junior'?'active':''}" data-lib="junior"><div class="t1">${this.t('juniorLib')}</div><div class="t2">${this.t('juniorLibSub')}</div></div>
+      <div class="lib-tab ${this.library==='senior'?'active':''}" data-lib="senior"><div class="t1">${this.t('seniorLib')}</div><div class="t2">${this.t('seniorLibSub')}</div></div>
+    `;
+    tabs.querySelectorAll('.lib-tab').forEach(t => {
+      t.addEventListener('click', () => {
+        this.library = t.dataset.lib;
+        this.renderLibTabs();
+        this.renderGrid();
+        this.renderMyList();
+      });
+    });
+  }
+
+  /* ---------------- FIRESTORE STORAGE ---------------- */
+  slotId(library, date, period) { return `${library}_${date}_p${period}`; }
+
+  startListening() {
+    document.getElementById('gridLoading').classList.add('show');
+    this.setSyncState('busy');
+    const colRef = collection(db, BOOKINGS_COL);
+    this.unsubscribe = onSnapshot(colRef, (snapshot) => {
+      const now = new Date();
+      const all = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      this.bookings = all.filter(b => new Date(`${b.date}T${b.endTime}:00`) > now);
+      this.online = true;
+      this.updateConnBanner();
+      this.setSyncState('ok');
+      document.getElementById('gridLoading').classList.remove('show');
+      this.renderGrid();
+      this.renderMyList();
+      this.sweepExpired(all);
+    }, (err) => {
+      this.online = false;
+      this.updateConnBanner();
+      this.setSyncState('err');
+      document.getElementById('gridLoading').classList.remove('show');
+      this.showToast(this.t('ghReadErr'), true);
+    });
+  }
+
+  async sweepExpired(all) {
+    const now = new Date();
+    const expired = all.filter(b => new Date(`${b.date}T${b.endTime}:00`) <= now);
+    for (const b of expired) {
+      deleteDoc(doc(db, BOOKINGS_COL, b.id)).catch(() => {});
+    }
+  }
+
+  /* ---------------- HELPERS ---------------- */
+  getWeekDates() {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    today.setDate(today.getDate() + this.weekOffset);
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - today.getDay());
+    return [0,1,2,3,4].map(i => { const d = new Date(sunday); d.setDate(sunday.getDate() + i); return d; });
+  }
+  dateKey(d) { return d.toISOString().split('T')[0]; }
+  todayKey() { return this.dateKey(new Date()); }
+  findBooking(dateKey, period) { return this.bookings.find(b => b.library === this.library && b.date === dateKey && b.period === period); }
+  fmtDate(dateKey) {
+    const d = new Date(dateKey + 'T00:00:00');
+    return d.toLocaleDateString(this.t('dateLocale'), { weekday: 'long', month: 'short', day: 'numeric' });
+  }
+
+  showToast(msg, isErr) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isErr ? ' err' : '');
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  closeSheet() {
+    document.getElementById('overlay').classList.remove('show');
+    if (this.pending) {
+      const cell = document.querySelector(`td[data-date="${this.pending.dateKey}"][data-period="${this.pending.period}"]`);
+      if (cell) cell.classList.remove('selecting');
+    }
+    this.pending = null;
+  }
+
+  /* ---------------- BOOKING FLOW ---------------- */
+  openTimeSheet(dateKey, period, cell) {
+    if (!navigator.onLine) { this.showToast(this.t('needInternet'), true); return; }
+    cell.classList.add('selecting');
+    this.pending = { dateKey, period };
+
+    document.getElementById('sheetContent').innerHTML = `
+      <div class="sheet-handle"></div>
+      <h2>${this.t('bookPeriod', period)}</h2>
+      <p class="sub">${this.fmtDate(dateKey)}</p>
+      <div class="two-col">
+        <div class="fg"><label>${this.t('arrivingAt')}</label><input type="time" id="sheetStart" /></div>
+        <div class="fg"><label>${this.t('leavingAt')}</label><input type="time" id="sheetEnd" /></div>
+      </div>
+      <p class="field-err" id="sheetErr">${this.t('timeErr')}</p>
+      <div class="sheet-btns">
+        <button class="cancel" id="sheetCancel">${this.t('cancel')}</button>
+        <button class="confirm" id="sheetNext">${this.t('continueBtn')}</button>
+      </div>
+    `;
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('sheetCancel').addEventListener('click', () => this.closeSheet());
+    ['sheetStart','sheetEnd'].forEach(id => document.getElementById(id).addEventListener('input', () => { document.getElementById('sheetErr').style.display = 'none'; }));
+    document.getElementById('sheetNext').addEventListener('click', () => {
+      const start = document.getElementById('sheetStart').value;
+      const end = document.getElementById('sheetEnd').value;
+      if (!start || !end || end <= start) { document.getElementById('sheetErr').style.display = 'block'; return; }
+      this.pending.startTime = start;
+      this.pending.endTime = end;
+      this.openConfirmSheet();
+    });
+  }
+
+  openConfirmSheet() {
+    const { dateKey, period, startTime, endTime } = this.pending;
+    const libName = this.library === 'junior' ? this.t('juniorLib') : this.t('seniorLib');
+
+    document.getElementById('sheetContent').innerHTML = `
+      <div class="sheet-handle"></div>
+      <h2>${this.t('confirmBooking')}</h2>
+      <p class="sub">${this.t('confirmSub')}</p>
+      <div class="confirm-box">
+        <div class="row"><span>${this.t('library')}</span><span>${libName}</span></div>
+        <div class="row"><span>${this.t('date')}</span><span>${this.fmtDate(dateKey)}</span></div>
+        <div class="row"><span>${this.t('period')}</span><span>${period}</span></div>
+        <div class="row"><span>${this.t('arriving')}</span><span>${startTime}</span></div>
+        <div class="row"><span>${this.t('leaving')}</span><span>${endTime}</span></div>
+        <div class="row"><span>${this.t('bookedBy')}</span><span>${this.currentUser}</span></div>
+      </div>
+      <div class="sheet-btns">
+        <button class="cancel" id="sheetBack">${this.t('goBack')}</button>
+        <button class="confirm" id="sheetConfirm">${this.t('yesBookIt')}</button>
+      </div>
+    `;
+    document.getElementById('sheetBack').addEventListener('click', () => this.openTimeSheet(dateKey, period, document.querySelector(`td[data-date="${dateKey}"][data-period="${period}"]`)));
+    document.getElementById('sheetConfirm').addEventListener('click', () => this.finalizeBooking());
+  }
+
+  async finalizeBooking() {
+    const btn = document.getElementById('sheetConfirm');
+    btn.disabled = true;
+    btn.textContent = this.t('booking');
+    const { dateKey, period, startTime, endTime } = this.pending;
+    const ref = doc(db, BOOKINGS_COL, this.slotId(this.library, dateKey, period));
+    try {
+      await runTransaction(db, async (tx) => {
+        const snap = await tx.get(ref);
+        if (snap.exists()) {
+          const existing = snap.data();
+          const stillActive = new Date(`${existing.date}T${existing.endTime}:00`) > new Date();
+          if (stillActive) throw new Error('CLASH');
+        }
+        tx.set(ref, { library: this.library, date: dateKey, period, startTime, endTime, teacher: this.currentUser });
+      });
+      document.getElementById('overlay').classList.remove('show');
+      this.pending = null;
+      this.showToast(this.t('periodBooked'));
+    } catch (e) {
+      document.getElementById('overlay').classList.remove('show');
+      this.pending = null;
+      if (e.message === 'CLASH') this.showToast(this.t('clashErr'), true);
+      else this.showToast(this.t('ghWriteErr'), true);
+    }
+  }
+
+  async deleteBooking(id) {
+    try {
+      await deleteDoc(doc(db, BOOKINGS_COL, id));
+      this.showToast(this.t('bookingRemoved'));
+    } catch (e) {
+      this.showToast(this.t('ghRemoveErr'), true);
+    }
+  }
+
+  async clearAll() {
+    if (!confirm(this.t('clearConfirm'))) return;
+    try {
+      const snapshot = await getDocs(collection(db, BOOKINGS_COL));
+      await Promise.all(snapshot.docs.map(d => deleteDoc(doc(db, BOOKINGS_COL, d.id))));
+      this.showToast(this.t('allCleared'));
+    } catch (e) {
+      this.showToast(this.t('ghClearErr'), true);
+    }
+  }
+
+  /* ---------------- RENDER ---------------- */
+  renderGrid() {
+    const weekDates = this.getWeekDates();
+    const today = this.todayKey();
+    const days = this.t('days');
+
+    if (this.weekOffset === 0) document.getElementById('weekLabel').textContent = this.t('thisWeek');
+    else if (this.weekOffset > 0) document.getElementById('weekLabel').textContent = this.t('weekAhead', this.weekOffset/7);
+    else document.getElementById('weekLabel').textContent = this.t('weekAgo', Math.abs(this.weekOffset)/7);
+
+    const table = document.getElementById('ttTable');
+    let thead = '<tr><th></th>' + PERIODS_A.map(p => `<th>${p}</th>`).join('') + `<th class="break-head">${this.t('breakLabel')}</th>` + PERIODS_B.map(p => `<th>${p}</th>`).join('') + '</tr>';
+
+    const renderCell = (dk, p) => {
+      const b = this.findBooking(dk, p);
+      if (!b) return `<td class="slot available" data-date="${dk}" data-period="${p}"><span class="dot"></span></td>`;
+      if (b.teacher === this.currentUser) return `<td class="slot mine"><span class="slot-name">${this.t('you')}</span><span class="slot-time">${b.startTime}-${b.endTime}</span></td>`;
+      return `<td class="slot other"><span class="slot-name">${b.teacher.split(' ').slice(-1)[0]}</span><span class="slot-time">${b.startTime}-${b.endTime}</span></td>`;
+    };
+
+    let rows = days.map((label, i) => {
+      const d = weekDates[i];
+      const dk = this.dateKey(d);
+      const isToday = dk === today;
+      const cellsA = PERIODS_A.map(p => renderCell(dk, p)).join('');
+      const breakCell = `<td class="slot break-cell">${this.t('breakLabel')}</td>`;
+      const cellsB = PERIODS_B.map(p => renderCell(dk, p)).join('');
+      return `<tr><td class="day-cell${isToday ? ' today' : ''}">${label}<span class="date-num">${d.getDate()}/${d.getMonth()+1}</span></td>${cellsA}${breakCell}${cellsB}</tr>`;
+    }).join('');
+
+    table.innerHTML = thead + rows;
+    table.querySelectorAll('.slot.available').forEach(cell => {
+      cell.addEventListener('click', () => this.openTimeSheet(cell.dataset.date, parseInt(cell.dataset.period), cell));
+    });
+  }
+
+  renderMyList() {
+    const mine = this.bookings.filter(b => b.library === this.library && b.teacher === this.currentUser);
+    const list = document.getElementById('myList');
+    if (mine.length === 0) {
+      list.innerHTML = `<div class="empty-note">${this.t('noBookings')}</div>`;
+      return;
+    }
+    list.innerHTML = mine.sort((a,b) => a.date.localeCompare(b.date) || a.period - b.period).map(b => {
+      const d = new Date(b.date + 'T00:00:00');
+      const dateStr = d.toLocaleDateString(this.t('dateLocale'), { weekday: 'short', month: 'short', day: 'numeric' });
+      const libTag = b.library === 'junior' ? this.t('juniorLib') : this.t('seniorLib');
+      return `
+        <div class="booking-row">
+          <div class="info">
+            <span class="lib-tag">${libTag}</span>
+            <span class="when">${dateStr} · ${this.t('arrivesLeaves', b.startTime, b.endTime)}</span>
+            <span class="period">${this.t('periodBookedBy', b.period, b.teacher)}</span>
+          </div>
+          <button data-id="${b.id}">${this.t('remove')}</button>
+        </div>`;
+    }).join('');
+    list.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => this.deleteBooking(btn.dataset.id)));
+  }
+}
+
+window.app = new App();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(() => {}); });
+}
+</script>
+</body>
+</html>
