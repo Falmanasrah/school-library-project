@@ -526,7 +526,7 @@ const I18N = {
     allCleared: 'تم مسح جميع الحجوزات',
     clearConfirm: 'هل تريد حذف جميع الحجوزات في كلا المكتبتين؟ لا يمكن التراجع عن هذا الإجراء.',
     days: ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],
-    dateLocale: 'ar-SA-u-nu-latn',
+    dateLocale: 'ar-JO-u-nu-latn',
     installBarText: 'ثبّت هذا كتطبيق على جهازك',
     installBarBtn: 'تثبيت',
     installTitle: 'تثبيت التطبيق',
@@ -762,6 +762,30 @@ class App {
     this.renderLibTabs();
     this.bindConnectivity();
     this.startListening();
+    this.bindAutoDayRollover();
+  }
+
+  bindAutoDayRollover() {
+    this._lastDayKey = this.todayKey();
+
+    const checkDateChange = () => {
+      const currentToday = this.todayKey();
+      if (currentToday !== this._lastDayKey) {
+        this._lastDayKey = currentToday;
+        // The date has rolled over to a new day or week!
+        this.renderGrid();
+        this.renderMyList();
+      }
+    };
+
+    // Check when user unlocks phone or switches back to the tab
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkDateChange();
+    });
+    window.addEventListener('focus', checkDateChange);
+
+    // Check automatically every 30 seconds for midnight rollover
+    setInterval(checkDateChange, 30 * 1000);
   }
 
   bindConnectivity() {
