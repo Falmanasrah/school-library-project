@@ -1,4 +1,4 @@
-const CACHE_NAME = 'library-booking-v7';
+const CACHE_NAME = 'library-booking-v8';
 const ASSETS = [
   './index.html',
   './manifest.json',
