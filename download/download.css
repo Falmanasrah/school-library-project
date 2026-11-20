@@ -1,0 +1,78 @@
+/* Public download page: neutral slate brand; each app card uses its own app colour. */
+:root { --brand: #33415c; --brand-dark: #263147; --brand-light: #e8ecf3; }
+[data-theme="dark"] { --brand: #a9badb; --brand-dark: #8396bd; --brand-light: #1e2738; }
+[data-theme="dark"] .btn.primary, [data-theme="dark"] .seg button.on,
+[data-theme="dark"] .sheet-btns .confirm:not(.danger) { background: #3d4f75; border-color: #3d4f75; color: #fff; }
+
+.dl-page { max-width: 1040px; margin: 0 auto; padding: 4px 16px 24px; }
+.dl-noscript { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; line-height: 1.6; }
+
+.dl-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 390px); gap: 24px; align-items: center; margin: 12px 0 28px; }
+.dl-logo { width: 56px; height: 56px; border-radius: 16px; background: var(--brand-dark); display: grid; place-items: center; box-shadow: var(--shadow); }
+[data-theme="dark"] .dl-logo { background: #3d4f75; }
+.dl-school { margin: 16px 0 4px; font-size: 13.5px; font-weight: 700; color: var(--ink-soft); }
+.dl-hero h1 { margin: 0; font-size: clamp(28px, 5vw, 40px); line-height: 1.15; }
+.dl-lead { font-size: 15.5px; color: var(--ink-soft); line-height: 1.6; margin: 12px 0 0; max-width: 520px; }
+
+.dl-qr { text-align: center; margin: 0; }
+.dl-qr h2 { font-size: 15px; margin: 0 0 12px; line-height: 1.4; }
+.qr-seg { justify-content: center; }
+.qr-box { background: #fff; border-radius: 14px; padding: 6px; display: inline-block; margin: 14px 0 8px; border: 1px solid var(--line); }
+.qr-box canvas { display: block; width: 232px; height: 232px; max-width: 100%; image-rendering: pixelated; }
+.qr-box .muted { width: 232px; max-width: 100%; padding: 30px 10px; margin: 0; color: #5b6b78; }
+.qr-url { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; color: var(--ink-soft); overflow-wrap: anywhere; margin: 0 0 12px; direction: ltr; unicode-bidi: isolate; }
+.dl-qr .btn-row { justify-content: center; }
+
+.dl-sec { margin-bottom: 18px; }
+.dl-sec h2 { font-size: 19px; margin: 0 0 4px; }
+.dl-sec > p.muted { margin: 0 0 14px; font-size: 13.5px; line-height: 1.5; }
+.card.dl-sec > p.muted { margin-bottom: 4px; }
+
+.dl-apps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.dl-app { --c: #0f5d8a; --cf: #0f5d8a; background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--c); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.dl-app.k-library { --c: #1f7a5a; --cf: #1f7a5a; }
+.dl-app.k-supervisors { --c: #b36b00; --cf: #9a5d00; }
+[data-theme="dark"] .dl-app.k-teachers { --c: #5aaee0; }
+[data-theme="dark"] .dl-app.k-library { --c: #4fc497; }
+[data-theme="dark"] .dl-app.k-supervisors { --c: #e9a640; }
+.dl-app-top { display: flex; gap: 12px; align-items: center; }
+.dl-app-top img { width: 52px; height: 52px; border-radius: 13px; flex-shrink: 0; }
+.dl-app-body { min-width: 0; }
+.dl-app-kind { font-size: 12px; font-weight: 700; color: var(--c); }
+.dl-app h3 { margin: 2px 0 0; font-size: 18px; }
+.dl-app p { margin: 0; font-size: 13.5px; color: var(--ink-soft); line-height: 1.55; }
+.dl-app .btn-row { margin-top: auto; padding-top: 4px; }
+.dl-app .btn.primary, [data-theme="dark"] .dl-app .btn.primary { background: var(--cf); border-color: var(--cf); color: #fff; }
+
+.plat-seg { margin-top: 12px; }
+.plat-seg .here { font-weight: 500; opacity: 0.8; }
+.steps { margin: 14px 0 0; padding-inline-start: 22px; line-height: 1.65; font-size: 14px; }
+.steps li { margin-bottom: 6px; padding-inline-start: 2px; }
+.kit-row { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.kit-row .muted { font-size: 13px; }
+.kit-note { font-size: 12.5px; margin: 12px 0 0; }
+.dl-good ul { margin: 10px 0 0; padding-inline-start: 20px; line-height: 1.65; font-size: 14px; color: var(--ink-soft); }
+.app-foot { padding-top: 6px; }
+
+.flash-sec { animation: dl-flash 1.4s ease; }
+@keyframes dl-flash { 0% { box-shadow: 0 0 0 5px var(--brand-light), var(--shadow); } 100% { box-shadow: var(--shadow); } }
+
+@media (max-width: 820px) {
+  .dl-hero { grid-template-columns: minmax(0, 1fr); gap: 18px; margin-bottom: 22px; }
+  .dl-hero-text { text-align: center; }
+  .dl-logo { margin: 0 auto; }
+  .dl-lead { margin-inline: auto; }
+}
+
+/* printed QR poster (A4) */
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+  .qr-poster { text-align: center; font-family: Arial, Helvetica, sans-serif; color: #000; padding-top: 6mm; }
+  .qr-poster .pp-school { font-size: 15pt; font-weight: 700; line-height: 1.4; }
+  .qr-poster h1 { font-size: 32pt; margin: 8mm 0 1mm; }
+  .qr-poster h2 { font-size: 26pt; margin: 0 0 8mm; }
+  .qr-poster img { width: 115mm; height: 115mm; image-rendering: pixelated; }
+  .qr-poster .pp-url { font-family: Consolas, monospace; font-size: 13pt; margin: 4mm 0 8mm; }
+  .qr-poster p { font-size: 15pt; margin: 2mm 0; }
+  .qr-poster .pp-small { font-size: 10.5pt; color: #333; margin-top: 10mm; }
+}

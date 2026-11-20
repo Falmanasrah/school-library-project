@@ -1,0 +1,58 @@
+/* Library Teachers App: green brand, wider layout for desk computers. */
+:root { --brand: #1f7a5a; --brand-dark: #165c43; --brand-light: #e4f3ec; }
+[data-theme="dark"] { --brand: #3bb38a; --brand-dark: #2b8a69; --brand-light: #12352a; }
+
+.lib-filter { height: 32px; border-radius: 8px; border: none; background: rgba(255,255,255,0.15); color: white; font-size: 12px; font-weight: 600; padding: 0 8px; cursor: pointer; }
+.lib-filter option { color: #14202b; }
+@media (max-width: 640px) { .lib-filter { max-width: 92px; } }
+
+.section-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 18px 0 8px; }
+.section-title h3 { font-size: 14.5px; margin: 0; }
+.section-title .n { font-size: 12px; color: var(--ink-soft); }
+
+/* incoming permission slips */
+.slip-card { background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); display: grid; grid-template-columns: 1fr auto; gap: 10px 16px; align-items: center; }
+.slip-card.new { border-color: #e7a400; box-shadow: 0 0 0 3px rgba(231,164,0,0.2), var(--shadow); animation: glow 1.4s ease-in-out 3; }
+@keyframes glow { 50% { box-shadow: 0 0 0 6px rgba(231,164,0,0.12), var(--shadow); } }
+.slip-card .who { font-size: 17px; font-weight: 700; }
+.slip-card .det { font-size: 13px; color: var(--ink-soft); margin-top: 3px; line-height: 1.5; }
+.slip-card .det b { color: var(--ink); font-weight: 600; }
+.slip-card .actions { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+.code { font-family: ui-monospace, Consolas, monospace; font-weight: 800; letter-spacing: 2px; font-size: 15px; padding: 3px 9px; border-radius: 8px; background: var(--page); border: 1.5px dashed var(--line-strong); display: inline-block; }
+.code.big { font-size: 26px; letter-spacing: 5px; padding: 6px 14px; }
+@media (max-width: 600px) { .slip-card { grid-template-columns: 1fr; } .slip-card .actions { flex-direction: row; flex-wrap: wrap; } }
+.code-lookup { display: flex; gap: 8px; align-items: flex-end; }
+.code-lookup input { text-transform: uppercase; letter-spacing: 3px; font-weight: 700; font-family: ui-monospace, Consolas, monospace; max-width: 150px; }
+
+.verify-box { background: var(--page); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; }
+.verify-box .who { font-size: 20px; font-weight: 700; }
+.verify-box .grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13.5px; margin-top: 8px; }
+.verify-box .grid span:nth-child(odd) { color: var(--ink-soft); }
+.verify-box .grid span:nth-child(even) { font-weight: 600; }
+
+.day-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; padding: 10px 12px; background: var(--brand-light); border-radius: 10px 10px 0 0; font-size: 13.5px; }
+.day-head + .table-wrap { border-top-left-radius: 0; border-top-right-radius: 0; }
+.total-row td { font-weight: 700; background: var(--page); }
+
+.admin-nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.admin-nav button { border: 1.5px solid var(--line); background: var(--surface); padding: 8px 13px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--ink-soft); cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.admin-nav button.on { border-color: var(--brand); color: var(--brand); background: var(--brand-light); }
+.admin-nav .count { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--red); color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; font-size: 13.5px; }
+.kv span:nth-child(odd) { color: var(--ink-soft); }
+.acct-actions { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.sheet .section-label { font-size: 12px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.4px; margin: 16px 0 8px; }
+.role-checks { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.role-checks label { display: flex; align-items: center; gap: 7px; padding: 8px 11px; border: 1.5px solid var(--line-strong); border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; background: var(--page); }
+.role-checks input { accent-color: var(--brand); width: 16px; height: 16px; margin: 0; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-row small { display: block; color: var(--ink-soft); font-size: 12px; margin-top: 2px; }
+.toggle-row input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--brand); flex-shrink: 0; }
+pre.details { background: var(--page); border-radius: 10px; padding: 10px; font-size: 12px; overflow: auto; max-height: 300px; white-space: pre-wrap; word-break: break-word; }
+.countdown { font-weight: 700; }
+nav.tabs { top: var(--hdr, 56px); }
+table.data td.actions .btn-row { flex-wrap: nowrap; }
+/* dark mode: keep white text readable on filled brand-coloured surfaces */
+[data-theme="dark"] header.top, [data-theme="dark"] .login-btn, [data-theme="dark"] .btn.primary, [data-theme="dark"] .seg button.on,
+[data-theme="dark"] .sheet-btns .confirm:not(.danger), [data-theme="dark"] .install-bar button { background: #1f7a5a; border-color: #1f7a5a; }

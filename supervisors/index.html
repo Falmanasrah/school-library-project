@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Floor Supervisors</title>
+<meta name="description" content="Floor Supervisors App: digital student permission slips to use the school library." />
+<meta name="theme-color" content="#b36b00" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<link rel="manifest" href="/supervisors/manifest.json" />
+<link rel="icon" href="/supervisors/icons/icon-192.png" />
+<link rel="apple-touch-icon" href="/supervisors/icons/icon-192.png" />
+<link rel="stylesheet" href="/shared/base.css" />
+<link rel="stylesheet" href="/shared/auth.css" />
+<link rel="stylesheet" href="/supervisors/supervisors.css" />
+</head>
+<body>
+
+<div class="util-bar">
+  <button class="util-btn" id="langToggle" type="button">EN / ع</button>
+  <button class="util-btn" id="themeToggle" type="button">🌙</button>
+</div>
+
+<div id="loginView" class="login-wrap"></div>
+
+<div id="app" class="app">
+  <div class="conn-banner" id="connBanner" data-i="connBanner">No internet connection</div>
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand-left">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" style="flex-shrink:0"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8.5 8h7M8.5 11.5h5"/><path d="M9 16l2 2 4-4"/></svg>
+        <div style="min-width:0">
+          <h1 data-i="appTitle">Floor Supervisors</h1>
+          <p id="headerSub"></p>
+        </div>
+      </div>
+      <div class="header-btns">
+        <div class="sync-pill"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">Live</span></div>
+        <button class="icon-btn" id="passwordBtn" type="button" title="Change password" aria-label="Change password">🔑</button>
+        <button class="icon-btn" id="logoutBtn" type="button" data-i="signOut">Sign out</button>
+      </div>
+    </div>
+  </header>
+  <nav class="tabs"><div class="tabs-inner" id="tabs" role="tablist"></div></nav>
+  <main class="content" id="main"></main>
+  <p class="app-foot" id="appFoot"></p>
+</div>
+
+<script type="module" src="/supervisors/app.js"></script>
+</body>
+</html>

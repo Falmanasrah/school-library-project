@@ -1,73 +1,34 @@
-const CACHE_NAME = 'library-booking-v10';
-const ASSETS = [
-  './index.html',
-  './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+// Teachers App service worker: network first (always the newest version when
+// online), cached copy when offline. School data (/api/) is never cached, and the
+// other apps on this site (/library/, /supervisors/, /download/) are left alone.
+const VERSION = '2.0.0';
+const PREFIX = 'slp-teachers-';
+const CACHE = PREFIX + VERSION;
+const SHELL = [
+  '/', '/index.html', '/teachers-app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png',
+  '/shared/core.js', '/shared/auth.js', '/shared/auth.css'
 ];
+const OTHER_APPS = ['/library/', '/supervisors/', '/download/', '/api/'];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).catch(() => {}));
   self.skipWaiting();
 });
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
+self.addEventListener('activate', (e) => {
+  // Remove this app's old caches (and the caches of the previous version of the app).
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => (k.startsWith(PREFIX) && k !== CACHE) || k.startsWith('library-booking-')).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
+self.addEventListener('message', (e) => { if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting(); });
 
-// Listen for message to skip waiting immediately
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
-
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  // Bypass service worker for Firebase, Google APIs, and auth
-  if (
-    url.hostname.includes('firestore') ||
-    url.hostname.includes('googleapis') ||
-    url.hostname.includes('gstatic') ||
-    url.hostname.includes('firebase')
-  ) {
-    return;
-  }
-
-  // Network-first for HTML pages (ensures newest app version is always loaded when online)
-  if (event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html')) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          }
-          return response;
-        })
-        .catch(() => caches.match('./index.html') || caches.match(event.request))
-    );
-    return;
-  }
-
-  // Network-first for all other assets
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        if (response && response.status === 200) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-        }
-        return response;
-      })
-      .catch(() => caches.match(event.request))
+self.addEventListener('fetch', (e) => {
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin || url.pathname === '/version.json' || OTHER_APPS.some(p => url.pathname.startsWith(p))) return;
+  e.respondWith(
+    fetch(req).then((res) => {
+      if (res && res.status === 200 && res.type === 'basic') { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
+      return res;
+    }).catch(async () => (await caches.match(req)) || (req.mode === 'navigate' ? caches.match('/index.html') : Response.error()))
   );
 });

@@ -1,0 +1,25 @@
+{
+  "id": "/supervisors/",
+  "name": "Floor Supervisors",
+  "short_name": "Supervisors",
+  "description": "Digital student permission slips to use the school library.",
+  "start_url": "/supervisors/",
+  "scope": "/supervisors/",
+  "display": "standalone",
+  "background_color": "#f4f7f9",
+  "theme_color": "#b36b00",
+  "icons": [
+    {
+      "src": "/supervisors/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/supervisors/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

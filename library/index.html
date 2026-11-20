@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Library Teachers</title>
+<meta name="description" content="Library Teachers App: visits list, visitors log, booking approval, permission slips and administration for the school library." />
+<meta name="theme-color" content="#1f7a5a" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<link rel="manifest" href="/library/manifest.json" />
+<link rel="icon" href="/library/icons/icon-192.png" />
+<link rel="apple-touch-icon" href="/library/icons/icon-192.png" />
+<link rel="stylesheet" href="/shared/base.css" />
+<link rel="stylesheet" href="/shared/auth.css" />
+<link rel="stylesheet" href="/library/library.css" />
+</head>
+<body>
+
+<div class="util-bar">
+  <button class="util-btn" id="langToggle" type="button">EN / ع</button>
+  <button class="util-btn" id="themeToggle" type="button">🌙</button>
+</div>
+
+<div id="loginView" class="login-wrap"></div>
+
+<div id="app" class="app">
+  <div class="conn-banner" id="connBanner" data-i="connBanner">No internet connection</div>
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand-left">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" style="flex-shrink:0"><path d="M4 19V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v14"/><path d="M9 19V7a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v12"/><path d="M14.5 6.5l2.9-.8a1 1 0 0 1 1.2.7l3 11.2"/><path d="M3 19h18"/></svg>
+        <div style="min-width:0">
+          <h1 data-i="appTitle">Library Teachers</h1>
+          <p id="headerSub"></p>
+        </div>
+      </div>
+      <div class="header-btns">
+        <select id="libFilter" class="lib-filter" aria-label="Library"></select>
+        <div class="sync-pill"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">Live</span></div>
+        <button class="icon-btn" id="passwordBtn" type="button" title="Change password" aria-label="Change password">🔑</button>
+        <button class="icon-btn" id="logoutBtn" type="button" data-i="signOut">Sign out</button>
+      </div>
+    </div>
+  </header>
+  <nav class="tabs"><div class="tabs-inner" id="tabs" role="tablist"></div></nav>
+  <main class="content" id="main"></main>
+  <p class="app-foot" id="appFoot"></p>
+</div>
+
+<script type="module" src="/library/app.js"></script>
+</body>
+</html>
