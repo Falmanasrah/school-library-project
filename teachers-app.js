@@ -95,7 +95,7 @@ const APP_I18N = {
     err_NOT_SCHOOL_DAY: 'Bookings are only possible Sunday to Thursday.',
     err_BOOKING_LIMIT: 'You have reached the maximum number of upcoming bookings.',
     err_NOT_CANCELLABLE: 'This booking can no longer be cancelled.',
-    changePassword: 'Change password',
+    changePassword: 'Username and password',
     version: (v) => `Version ${v} · updates automatically`
   },
   ar: {
@@ -182,7 +182,7 @@ const APP_I18N = {
     err_NOT_SCHOOL_DAY: 'الحجز متاح من الأحد إلى الخميس فقط.',
     err_BOOKING_LIMIT: 'وصلت إلى الحد الأقصى لعدد الحجوزات القادمة.',
     err_NOT_CANCELLABLE: 'لم يعد بالإمكان إلغاء هذا الحجز.',
-    changePassword: 'تغيير كلمة المرور',
+    changePassword: 'اسم المستخدم وكلمة المرور',
     version: (v) => `الإصدار ${v} · يتم التحديث تلقائيًا`
   }
 };

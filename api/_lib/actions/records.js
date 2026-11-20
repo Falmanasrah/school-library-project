@@ -5,6 +5,8 @@ import { audit, auditTx, bump, schoolNow } from '../core.js';
 import { checkRange, rangeQuery } from './bookings.js';
 
 const LIB_ROLES = ['librarian', 'admin'];
+// Corrections and deletions: library teachers have the same powers as administrators.
+const ADMIN_ROLES = LIB_ROLES;
 export const SLIP_STATUSES = ['sent', 'received', 'used', 'rejected', 'cancelled'];
 export const SLIP_REASONS = ['borrow_return', 'reading', 'research', 'study', 'other'];
 
@@ -147,7 +149,7 @@ export default {
   },
 
   'admin.visit.delete': {
-    auth: 'active', apps: ['library'], roles: ['admin'],
+    auth: 'active', apps: ['library'], roles: ADMIN_ROLES,
     async handler(ctx, d) {
       const v = await ctx.db.get('visits', String(d.id || ''));
       if (!v) throw notFound('Visit');
@@ -219,7 +221,7 @@ export default {
   },
 
   'admin.visitor.delete': {
-    auth: 'active', apps: ['library'], roles: ['admin'],
+    auth: 'active', apps: ['library'], roles: ADMIN_ROLES,
     async handler(ctx, d) {
       const v = await ctx.db.get('visitors', String(d.id || ''));
       if (!v) throw notFound('Visitor');
@@ -384,7 +386,7 @@ export default {
   },
 
   'admin.slip.update': {
-    auth: 'active', apps: ['library'], roles: ['admin'],
+    auth: 'active', apps: ['library'], roles: ADMIN_ROLES,
     async handler(ctx, d) {
       const s = await ctx.db.get('slips', String(d.id || ''));
       if (!s) throw notFound('Permission slip');
@@ -406,7 +408,7 @@ export default {
   },
 
   'admin.slip.delete': {
-    auth: 'active', apps: ['library'], roles: ['admin'],
+    auth: 'active', apps: ['library'], roles: ADMIN_ROLES,
     async handler(ctx, d) {
       const s = await ctx.db.get('slips', String(d.id || ''));
       if (!s) throw notFound('Permission slip');

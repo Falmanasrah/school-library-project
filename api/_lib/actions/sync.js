@@ -1,6 +1,6 @@
 // Live sync for each app. Clients poll with the versions they already have;
 // when nothing relevant changed the server answers with a single cheap read.
-import { dateKey, addDays, LIBRARIES } from '../util.js';
+import { dateKey, addDays, LIBRARIES, isAdminUser } from '../util.js';
 import { getVersions, bookingWindow, publicPeriod, schoolNow } from '../core.js';
 import { bookingView } from './bookings.js';
 import { visitView, visitorView, slipView } from './records.js';
@@ -54,7 +54,7 @@ export default {
   'library.sync': {
     auth: 'active', apps: ['library'], roles: ['librarian', 'admin'],
     async handler(ctx, d) {
-      const isAdmin = ctx.user.roles.includes('admin');
+      const isAdmin = isAdminUser(ctx.user);
       const keys = ['bookings', 'slips', 'visits', 'visitors', 'periods', 'settings', 'users'];
       const versions = await getVersions(ctx.db);
       if (unchanged(d.since, versions, keys)) return { changed: false, ...clock(ctx) };

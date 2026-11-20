@@ -40,11 +40,11 @@ Then **redeploy** (Deployments → ⋯ → Redeploy) so the function picks them 
 
 Without `FIREBASE_SERVICE_ACCOUNT` the server refuses to run in production. It never falls back to temporary storage, so no data can silently disappear.
 
-### 1.3 First administrator
+### 1.3 First library teacher (full administrator)
 
 1. Open `https://YOUR-SITE/library/`.
-2. Click **First-time setup (administrator)**.
-3. Enter the `ADMIN_SETUP_KEY`, your name, email and a strong password.
+2. Click **First-time setup (library teacher)**.
+3. Enter the `ADMIN_SETUP_KEY`, then **her own** name, username and password (email is optional).
 
 Setup works only once. After that the form refuses ("already set up"). You can then remove `ADMIN_SETUP_KEY` from Vercel, or keep it secret.
 
@@ -68,7 +68,8 @@ All of this is in **Admin**:
   - whether a student ID is required on permission slips
 - **Accounts:**
   - create library teachers and floor supervisors, or approve people who registered themselves
-  - accounts you create get a temporary password, which must be changed at first sign-in
+  - everyone chooses their own username and password when they register; accounts made in Admin get a temporary username and password, and the person picks their own at first sign-in
+  - library teachers have every administrator power
 - **Booking periods:** open the first booking period.
   - Each period lasts exactly **7 days** and closes automatically. It cannot be extended or bypassed, only closed early.
   - Teachers can only book while a period is open, and only dates inside its booking range.
@@ -95,6 +96,8 @@ npm test
 ---
 
 ## 3. Getting the apps onto devices
+
+- **Ready folders:** `ready-for-pcs/` has one folder (and one .zip) per app. Copy the one a PC needs and double-click `Install.cmd`. They open https://school-library-project-nu.vercel.app; if the address changes, run `npm run kits -- https://new-address`.
 
 - **QR code:**
   - open `https://YOUR-SITE/download/` and click **Print QR poster** (A4, English and Arabic)

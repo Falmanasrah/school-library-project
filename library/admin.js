@@ -9,7 +9,9 @@ import {
 const ROLES = ['teacher', 'librarian', 'supervisor', 'admin'];
 const SUBS = ['overview', 'accounts', 'bookings', 'periods', 'settings', 'audit'];
 const roleChips = (roles) => roles.map(r => `<span class="chip">${esc(t('role_' + r))}</span>`).join('') || '<span class="muted">—</span>';
-const roleChecks = (sel = []) => `<div class="fg full"><label>${esc(t('roles'))}</label><div class="role-checks">${ROLES.map(r => `<label><input type="checkbox" name="role" value="${r}"${sel.includes(r) ? ' checked' : ''} /> ${esc(t('role_' + r))}</label>`).join('')}</div></div>`;
+const roleChecks = (sel = []) => `<div class="fg full"><label>${esc(t('roles'))}</label><div class="role-checks">${ROLES.map(r => `<label><input type="checkbox" name="role" value="${r}"${sel.includes(r) ? ' checked' : ''} /> ${esc(t('role_' + r))}</label>`).join('')}</div><small class="hint">${esc(t('librarianIsAdmin'))}</small></div>`;
+// How an account signs in: its username (and email, if it has one).
+const who = (u) => [u.username ? '@' + u.username : '', u.email || ''].filter(Boolean).join(' · ');
 const readRoles = (root) => [...root.querySelectorAll('input[name="role"]:checked')].map(x => x.value);
 const LRI = String.fromCharCode(0x2066), PDI = String.fromCharCode(0x2069); // keep time ranges in order in Arabic
 const pad = (n) => String(n).padStart(2, '0');
@@ -55,7 +57,7 @@ const Overview = {
       </div>
       <div class="card"><h3>${esc(t('needsAttention'))} ${att.length ? `<span class="status-badge st-pending">${att.length}</span>` : ''}</h3>
         ${att.length ? `<div class="list">${att.map(u => `<div class="item"><div class="main"><div class="title">${esc(u.name)} ${badge(u.status)}</div>
-          <div class="meta">${esc(u.email)}${u.requestedRoles.length ? ` · ${esc(t('wantsRole', u.requestedRoles.map(r => t('role_' + r)).join(', ')))}` : ''}${u.resetRequestedAt ? ` · <b>${esc(t('resetAsked', dt(u.resetRequestedAt)))}</b>` : ''} · ${esc(t('registered', dt(u.createdAt)))}</div></div>
+          <div class="meta">${esc(who(u))}${u.requestedRoles.length ? ` · ${esc(t('wantsRole', u.requestedRoles.map(r => t('role_' + r)).join(', ')))}` : ''}${u.resetRequestedAt ? ` · <b>${esc(t('resetAsked', dt(u.resetRequestedAt)))}</b>` : ''} · ${esc(t('registered', dt(u.createdAt)))}</div></div>
           <button class="btn primary sm" type="button" data-act="manage" data-uid="${esc(u.id)}">${esc(t('manage'))}</button></div>`).join('')}</div>` : `<p class="muted small" style="margin:0">${esc(t('attentionNone'))}</p>`}
       </div>
       <div class="card"><h3>${esc(t('health'))}</h3>
@@ -84,7 +86,7 @@ const Accounts = {
     this.box = box;
     const st = ['all', 'active', 'pending', 'suspended', 'banned', 'rejected', 'locked', 'attention'];
     box.innerHTML = `<div class="toolbar">
-        <div class="fg grow"><label for="aText">${esc(t('search'))}</label><input id="aText" value="${esc(this.q.text)}" placeholder="${esc(t('name'))}, ${esc(t('email'))}" /></div>
+        <div class="fg grow"><label for="aText">${esc(t('search'))}</label><input id="aText" value="${esc(this.q.text)}" placeholder="${esc(t('name'))}, ${esc(t('username'))}, ${esc(t('email'))}" /></div>
         <div class="fg"><label for="aRole">${esc(t('roles'))}</label><select id="aRole"><option value="all">${esc(t('allRoles'))}</option>${ROLES.map(r => `<option value="${r}"${this.q.role === r ? ' selected' : ''}>${esc(t('role_' + r))}</option>`).join('')}</select></div>
         <div class="fg"><label for="aStatus">${esc(t('status'))}</label><select id="aStatus">${st.map(s => `<option value="${s}"${this.q.status === s ? ' selected' : ''}>${esc(s === 'all' ? t('allStatuses') : s === 'locked' ? t('locked') : s === 'attention' ? t('needsAttention') : t('st_' + s))}</option>`).join('')}</select></div>
         <button class="btn primary" type="button" data-act="new">＋ ${esc(t('newAccount'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div>
@@ -100,7 +102,7 @@ const Accounts = {
   },
   filtered() {
     const q = this.q.text.toLowerCase();
-    return (Users.list || []).filter(u => (!q || u.name.toLowerCase().includes(q) || u.email.includes(q)) &&
+    return (Users.list || []).filter(u => (!q || u.name.toLowerCase().includes(q) || (u.username || '').includes(q) || (u.email || '').includes(q)) &&
       (this.q.role === 'all' || u.roles.includes(this.q.role) || u.requestedRoles.includes(this.q.role)) &&
       (this.q.status === 'all' || (this.q.status === 'locked' ? locked(u) : this.q.status === 'attention' ? u.attention : u.status === this.q.status)));
   },
@@ -109,7 +111,7 @@ const Accounts = {
     if (!box || !Users.list) return;
     const rows = this.filtered();
     box.innerHTML = rows.length ? `<div class="table-wrap"><table class="data"><thead><tr><th>${esc(t('name'))}</th><th>${esc(t('roles'))}</th><th>${esc(t('status'))}</th><th>${esc(t('lastSignIn'))}</th><th>${esc(t('created'))}</th><th></th></tr></thead><tbody>
-      ${rows.map(u => `<tr class="clickable" data-act="manage" data-uid="${esc(u.id)}"><td><b>${esc(u.name)}</b>${u.id === S.me.id ? ` <span class="muted">${esc(t('you'))}</span>` : ''}<span class="sub">${esc(u.email)}</span></td>
+      ${rows.map(u => `<tr class="clickable" data-act="manage" data-uid="${esc(u.id)}"><td><b>${esc(u.name)}</b>${u.id === S.me.id ? ` <span class="muted">${esc(t('you'))}</span>` : ''}<span class="sub">${esc(who(u))}</span></td>
         <td>${roleChips(u.roles)}${u.requestedRoles.length ? `<span class="sub">${esc(t('requested'))}: ${esc(u.requestedRoles.map(r => t('role_' + r)).join(', '))}</span>` : ''}</td>
         <td>${badge(u.status)}${locked(u) ? ` <span class="status-badge st-rejected">🔒 ${esc(t('locked'))}</span>` : ''}${u.resetRequestedAt ? ` <span class="status-badge st-pending">${esc(t('resetReq'))}</span>` : ''}${u.statusReason ? `<span class="sub">${esc(u.statusReason)}</span>` : ''}</td>
         <td class="small">${u.lastLoginAt ? `${esc(dt(u.lastLoginAt))}<span class="sub">${esc(t('app_' + (u.lastLoginApp || 'library')))}</span>` : esc(t('never'))}</td><td class="small">${esc(dt(u.createdAt))}</td>
@@ -119,8 +121,8 @@ const Accounts = {
     if (!a) return;
     if (a.dataset.act === 'new') return newAccount();
     if (a.dataset.act === 'csv') {
-      return downloadCsv(`accounts-${S.today}.csv`, ['Name', 'Email', 'Roles', 'Requested roles', 'Status', 'Reason', 'Last sign-in', 'Created'],
-        this.filtered().map(u => [u.name, u.email, u.roles.join(' '), u.requestedRoles.join(' '), u.status, u.statusReason, u.lastLoginAt ? new Date(u.lastLoginAt).toISOString() : '', u.createdAt ? new Date(u.createdAt).toISOString() : '']));
+      return downloadCsv(`accounts-${S.today}.csv`, ['Name', 'Username', 'Email', 'Roles', 'Requested roles', 'Status', 'Reason', 'Last sign-in', 'Created'],
+        this.filtered().map(u => [u.name, u.username || '', u.email || '', u.roles.join(' '), u.requestedRoles.join(' '), u.status, u.statusReason, u.lastLoginAt ? new Date(u.lastLoginAt).toISOString() : '', u.createdAt ? new Date(u.createdAt).toISOString() : '']));
     }
     return undefined;
   }
@@ -131,7 +133,8 @@ function newAccount() {
     title: t('newAccount'), wide: true, submitLabel: t('newAccount'),
     fields: [
       { id: 'name', label: t('a_name'), maxlength: 80 },
-      { id: 'email', label: t('email'), type: 'email', autocomplete: 'off' },
+      { id: 'username', label: t('username'), maxlength: 30, autocomplete: 'off', hint: t('usernameTempHint') },
+      { id: 'email', label: t('email'), type: 'email', autocomplete: 'off', optional: true },
       { type: 'html', html: roleChecks([]) },
       { id: 'password', label: t('tempPassword'), value: genPassword(), autocomplete: 'off', hint: t('a_passHint') },
       { id: 'mustChangePassword', type: 'check', label: t('mustChange'), value: true }
@@ -143,7 +146,7 @@ function newAccount() {
       toast(t('accountCreated'));
       await Users.load(true).catch(() => {});
       ctl.refresh(); Accounts.renderList();
-      setTimeout(() => detailSheet({ title: t('accountCreated'), sub: esc(t('giveTemp')), rows: [[t('a_name'), v.name], [t('email'), v.email], [t('roles'), roles.map(r => t('role_' + r)).join(', ')], [t('tempPassword'), `<b class="code">${esc(v.password)}</b>`, true]] }), 250);
+      setTimeout(() => detailSheet({ title: t('accountCreated'), sub: esc(t('giveTemp')), rows: [[t('a_name'), v.name], [t('username'), v.username.toLowerCase()], [t('roles'), roles.map(r => t('role_' + r)).join(', ')], [t('tempPassword'), `<b class="code">${esc(v.password)}</b>`, true]] }), 250);
     }
   });
 }
@@ -161,7 +164,7 @@ async function manageAccount(uid) {
     const restricted = ['suspended', 'banned', 'rejected'].includes(u.status);
     h.el.innerHTML = `<div class="sheet-handle"></div>
       <h2>${esc(u.name)} ${self() ? `<span class="muted" style="font-size:13px">${esc(t('you'))}</span>` : ''}</h2>
-      <p class="sub">${esc(u.email)} · ${badge(u.status)} ${roleChips(u.roles)}</p>
+      <p class="sub">${esc(who(u))} · ${badge(u.status)} ${roleChips(u.roles)}</p>
       ${pendingReq ? `<div class="auth-notice warn">${esc(u.requestedRoles.length ? t('wantsRole', u.requestedRoles.map(r => t('role_' + r)).join(', ')) : t('st_pending'))}
         <div class="btn-row" style="margin-top:8px"><button class="btn good sm" type="button" data-m="approve">✓ ${esc(t('approveReq', (u.requestedRoles.length ? u.requestedRoles : u.roles).map(r => t('role_' + r)).join(', ') || '—'))}</button><button class="btn danger sm" type="button" data-m="deny">${esc(t('denyReq'))}</button></div></div>` : ''}
       ${u.resetRequestedAt ? `<div class="auth-notice warn">${esc(t('resetAsked', dt(u.resetRequestedAt)))}</div>` : ''}
@@ -173,7 +176,8 @@ async function manageAccount(uid) {
       <div class="section-label">${esc(t('sec_details'))}</div>
       <div class="form-grid">
         <div class="fg"><label for="mName">${esc(t('a_name'))}</label><input id="mName" value="${esc(u.name)}" maxlength="80" autocomplete="off" /></div>
-        <div class="fg"><label for="mEmail">${esc(t('email'))}</label><input id="mEmail" type="email" value="${esc(u.email)}" autocomplete="off" /></div>
+        <div class="fg"><label for="mUser">${esc(t('username'))}</label><input id="mUser" value="${esc(u.username || '')}" maxlength="30" autocomplete="off" autocapitalize="none" spellcheck="false" /></div>
+        <div class="fg"><label for="mEmail">${esc(t('email'))} <span class="muted" style="font-weight:500">${esc(t('optional'))}</span></label><input id="mEmail" type="email" value="${esc(u.email || '')}" autocomplete="off" /></div>
         ${roleChecks(u.roles)}
       </div>
       <button class="btn primary" type="button" data-m="save">${esc(t('saveDetails'))}</button>
@@ -226,12 +230,12 @@ async function manageAccount(uid) {
       case 'save': {
         const roles = readRoles(h.el);
         if (!roles.length) { const er = $('#mErr', h.el); er.textContent = t('chooseRole'); er.style.display = 'block'; return undefined; }
-        return call(b, 'admin.user.update', { name: $('#mName', h.el).value.trim(), email: $('#mEmail', h.el).value.trim(), roles }, t('saved'));
+        return call(b, 'admin.user.update', { name: $('#mName', h.el).value.trim(), username: $('#mUser', h.el).value.trim(), email: $('#mEmail', h.el).value.trim(), roles }, t('saved'));
       }
       case 'setpw': {
         const password = $('#mPass', h.el).value.trim();
         const r = await call(b, 'admin.user.setPassword', { password, mustChangePassword: $('#mMust', h.el).checked }, null);
-        if (r) detailSheet({ title: t('setPassword'), sub: esc(t('passwordSet')), rows: [[t('a_name'), u.name], [t('email'), u.email], [t('tempPassword'), `<b class="code">${esc(password)}</b>`, true]] });
+        if (r) detailSheet({ title: t('setPassword'), sub: esc(t('passwordSet')), rows: [[t('a_name'), u.name], [t('username'), u.username || u.email || ''], [t('tempPassword'), `<b class="code">${esc(password)}</b>`, true]] });
         return undefined;
       }
       case 'unlock': return call(b, 'admin.user.unlock', {}, t('unlocked'));
@@ -255,7 +259,7 @@ async function manageAccount(uid) {
       case 'reactivate': return call(b, 'admin.user.reactivate', {}, t('reactivated'));
       case 'revoke': return call(b, 'admin.user.revokeSessions', {}, (r) => t('sessionsOut', r.revoked));
       case 'delete': {
-        const ok = await confirmDialog({ title: t('deleteAccountTitle'), message: `<b>${esc(u.name)}</b> · ${esc(u.email)}<br>${esc(t('deleteAccountBody'))}`, confirmLabel: t('deleteAccount'), cancelLabel: t('cancel'), danger: true });
+        const ok = await confirmDialog({ title: t('deleteAccountTitle'), message: `<b>${esc(u.name)}</b> · ${esc(who(u))}<br>${esc(t('deleteAccountBody'))}`, confirmLabel: t('deleteAccount'), cancelLabel: t('cancel'), danger: true });
         if (!ok) return undefined;
         try { await api.call('admin.user.delete', { uid }); toast(t('deleted')); h.close(); await Users.load(true).catch(() => {}); ctl.refresh(); Accounts.renderList(); }
         catch (e2) { toast(formError(e2), true); }
@@ -314,7 +318,7 @@ const Bookings = {
     if (!b) {
       try { await Users.load(); } catch (e) { return toast(errorText(e, i18n), true); }
       const teachers = Users.list.filter(u => u.roles.includes('teacher') && u.status === 'active');
-      teacherField = { id: 'teacherUid', label: t('chooseTeacher'), type: 'select', full: true, options: [{ value: '', label: '—' }, ...teachers.map(u => ({ value: u.id, label: `${u.name} (${u.email})` }))] };
+      teacherField = { id: 'teacherUid', label: t('chooseTeacher'), type: 'select', full: true, options: [{ value: '', label: '—' }, ...teachers.map(u => ({ value: u.id, label: `${u.name} (${who(u)})` }))] };
     }
     const statuses = b ? ['pending', 'approved', 'rejected', 'cancelled', 'completed', 'no_show'] : ['approved', 'pending'];
     const fields = [

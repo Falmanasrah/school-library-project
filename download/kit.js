@@ -164,16 +164,21 @@ function installPs1(apps, origin, version, stamp) {
   ]);
 }
 
-function uninstallPs1() {
+// Removes only the apps in this kit, so uninstalling one app leaves the others on the computer.
+function uninstallPs1(apps) {
   return crlf([
-    '# School Library Apps - removes the shortcuts created by install.ps1 for this Windows user.',
+    '# School Library Apps - removes the shortcuts this kit created for this Windows user.',
     "param([string]$OutDir = '')",
     "$ErrorActionPreference = 'Continue'",
-    `$names = @(${APP_LIST.map(a => psq(a.name)).join(', ')})`,
+    `$apps = @(${apps.map(a => `@{ Key = ${psq(a.key)}; Name = ${psq(a.name)} }`).join(', ')})`,
     ...DIRS,
-    "foreach ($n in $names) { foreach ($ext in @('.lnk', '.url')) { $p = Join-Path $deskDir ($n + $ext); if (Test-Path -LiteralPath $p) { Remove-Item -LiteralPath $p -Force } } }",
-    'foreach ($d in @($menuDir, $dataDir)) { if (Test-Path -LiteralPath $d) { Remove-Item -LiteralPath $d -Recurse -Force } }',
-    "Write-Host '  The school library app shortcuts were removed for this user.'",
+    'foreach ($app in $apps) {',
+    "  foreach ($dir in @($deskDir, $menuDir)) { foreach ($ext in @('.lnk', '.url')) { $p = Join-Path $dir ($app.Name + $ext); if (Test-Path -LiteralPath $p) { Remove-Item -LiteralPath $p -Force } } }",
+    "  $ico = Join-Path $dataDir ($app.Key + '.ico'); if (Test-Path -LiteralPath $ico) { Remove-Item -LiteralPath $ico -Force }",
+    "  Write-Host ('  Removed: ' + $app.Name)",
+    '}',
+    'foreach ($d in @($menuDir, $dataDir)) { if ((Test-Path -LiteralPath $d) -and -not (Get-ChildItem -LiteralPath $d -Force)) { Remove-Item -LiteralPath $d -Force } }',
+    "Write-Host '  Done. Other school library apps on this computer were left in place.'",
     "Write-Host '  Apps installed from inside the browser are removed from the browser Apps page.'"
   ]);
 }
@@ -194,7 +199,7 @@ function readme(apps, origin, version, stamp) {
     '',
     'WHAT IS INSIDE',
     '  Install.cmd       Installs the app(s) for the current Windows user.',
-    '  Uninstall.cmd     Removes the shortcuts again.',
+    '  Uninstall.cmd     Removes this kit\'s shortcuts again (other apps stay).',
     '  Open ... .url     Opens an app in the web browser without installing anything.',
     '  files\\            Installer scripts and app icons.',
     '',
@@ -214,7 +219,8 @@ function readme(apps, origin, version, stamp) {
     'GOOD TO KNOW',
     `  - The apps load from ${origin} and need the internet or the school network.`,
     '  - They update themselves automatically. You never need to reinstall to update.',
-    '  - Signing in needs a school account created or approved by the library administrator.',
+    '  - Signing in needs a school account approved by the library teacher. Everyone chooses',
+    '    their own username and password.',
     `  - Phones and tablets: scan the QR code on ${dl}`,
     '',
     '------------------------------------------------------------',
@@ -246,7 +252,7 @@ function readme(apps, origin, version, stamp) {
     'معلومات مهمة',
     `  - تعمل التطبيقات من ${origin} وتحتاج إلى الإنترنت أو شبكة المدرسة.`,
     '  - تُحدَّث التطبيقات تلقائيًا، ولا حاجة لإعادة التثبيت عند صدور تحديث.',
-    '  - يتطلب تسجيل الدخول حساب مدرسة ينشئه أو يعتمده مسؤول المكتبة.',
+    '  - يتطلب تسجيل الدخول حساب مدرسة يعتمده معلم المكتبة، ويختار كل شخص اسم المستخدم وكلمة المرور بنفسه.',
     `  - للهواتف والأجهزة اللوحية: امسح رمز QR في الصفحة ${dl}`
   ]);
 }
@@ -264,7 +270,7 @@ export function buildKit({ origin, keys, icons = {}, version = '', date = new Da
     { name: dir + 'Install.cmd', data: installCmd('Install', 'install.ps1', 'The installer could not finish. Use the "Open ..." shortcuts in this folder instead.') },
     { name: dir + 'Uninstall.cmd', data: installCmd('Uninstall', 'uninstall.ps1', 'Some shortcuts could not be removed. Delete them from the desktop by hand.') },
     { name: dir + 'files/install.ps1', data: installPs1(apps, base, version, stamp) },
-    { name: dir + 'files/uninstall.ps1', data: uninstallPs1() },
+    { name: dir + 'files/uninstall.ps1', data: uninstallPs1(apps) },
     ...apps.map(a => ({ name: `${dir}Open ${a.name}.url`, data: urlShortcut(a.url) })),
     ...apps.filter(a => icons[a.key]).map(a => ({ name: `${dir}files/${a.key}.ico`, data: icons[a.key] }))
   ];

@@ -23,6 +23,9 @@ export const APPS = {
   library: { roles: ['librarian', 'admin'], registerRole: 'librarian' },
   supervisors: { roles: ['supervisor'], registerRole: 'supervisor' }
 };
+// Library teachers have every administrator power; "admin" exists for staff who are not library teachers.
+export const ADMIN_ROLES = ['admin', 'librarian'];
+export const isAdminUser = (u) => (u?.roles || []).some(r => ADMIN_ROLES.includes(r));
 export const SCHOOL_DAYS = [0, 1, 2, 3, 4]; // Sunday..Thursday
 export const PERIODS = [1, 2, 3, 4, 5, 6, 7];
 export const BOOKING_PERIOD_MS = 7 * 24 * 60 * 60 * 1000;
@@ -66,6 +69,20 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export function email(v, field = 'Email') {
   const s = str(v, field, { max: 200 }).toLowerCase();
   if (!EMAIL_RE.test(s)) throw bad('INVALID_EMAIL', 'Enter a valid email address.', { field });
+  return s;
+}
+
+export function optionalEmail(v, field = 'Email') {
+  if (v === undefined || v === null || (typeof v === 'string' && v.trim() === '')) return null;
+  return email(v, field);
+}
+
+// Everyone chooses their own username: 3-30 characters, letters, numbers, dot, dash, underscore.
+const USERNAME_RE = /^[a-z0-9][a-z0-9._-]{2,29}$/;
+export function username(v, field = 'Username') {
+  const s = typeof v === 'string' ? v.trim().toLowerCase() : '';
+  if (!s) throw bad('INVALID_INPUT', `${field} is required.`, { field });
+  if (!USERNAME_RE.test(s)) throw bad('INVALID_USERNAME', 'A username has 3 to 30 English letters or numbers (dots, dashes and underscores are allowed, no spaces).', { field });
   return s;
 }
 

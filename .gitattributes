@@ -1,0 +1,2 @@
+# Ready-to-copy install folders keep their Windows line endings exactly as generated.
+ready-for-pcs/** -text

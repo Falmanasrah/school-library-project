@@ -6,16 +6,19 @@ import { esc, $, toast, errorText, fmtDateTime } from './core.js';
 export const AUTH_I18N = {
   en: {
     a_email: 'Email', a_password: 'Password', a_name: 'Full name', a_confirm: 'Confirm password',
+    a_login: 'Username or email', a_username: 'Username', a_usernamePh: 'e.g. sarah.ahmad', a_emailOpt: 'Email (optional)',
+    a_usernameHint: 'Choose your own: 3 to 30 English letters or numbers. Dots, dashes and underscores are allowed, no spaces.',
+    a_accountTitle: 'Username and password', a_newOptional: 'New password (leave empty to keep your current one)', a_saved: 'Saved',
     a_emailPh: 'name@school.edu', a_namePh: 'e.g. Sarah Ahmad', a_passHint: 'At least 8 characters, with letters and numbers.',
     a_remember: 'Keep me signed in on this device', a_rememberHint: 'Leave unticked on shared computers.',
     a_signIn: 'Sign in', a_signingIn: 'Signing in…', a_forgot: 'Forgot password?', a_noAccount: 'New here?', a_create: 'Create an account',
     a_haveAccount: 'Already have an account?', a_backToSignIn: 'Back to sign in', a_register: 'Create account', a_registering: 'Creating…',
     a_registerTitle: 'Create your account', a_registerSub: (role) => `Your account will be reviewed before you can use the app as a ${role}.`,
     a_mismatch: 'The two passwords do not match.', a_required: 'Please fill in every field.',
-    a_forgotTitle: 'Reset your password', a_forgotSub: 'Enter your email. The library administrator will receive your request and give you a temporary password.',
+    a_forgotTitle: 'Reset your password', a_forgotSub: 'Enter your username or email. The library teacher will receive your request and give you a temporary password.',
     a_forgotBtn: 'Send request', a_forgotDone: 'Request sent. The library administrator will contact you with a temporary password.',
-    a_setupLink: 'First-time setup (administrator)', a_setupTitle: 'First-time setup', a_setupSub: 'Create the first administrator account. You need the setup key from the server settings (ADMIN_SETUP_KEY).',
-    a_setupKey: 'Setup key', a_setupBtn: 'Create administrator',
+    a_setupLink: 'First-time setup (library teacher)', a_setupTitle: 'First-time setup', a_setupSub: 'Create the first library teacher account, with full administrator rights. Choose your own username and password. You need the setup key from the server settings (ADMIN_SETUP_KEY).',
+    a_setupKey: 'Setup key', a_setupBtn: 'Create my account',
     a_pendingTitle: 'Waiting for approval', a_pendingBody: 'Your account has been created. The library administrator must approve it before you can sign in. Please check back later.',
     a_suspendedTitle: 'Account suspended', a_suspendedBody: 'Your account has been suspended by the library administrator.',
     a_bannedTitle: 'Account blocked', a_bannedBody: 'Your account has been blocked by the library administrator.',
@@ -23,11 +26,14 @@ export const AUTH_I18N = {
     a_reason: 'Reason', a_until: 'Until',
     a_noAccessTitle: 'No access to this app', a_noAccessBody: (app) => `You are signed in, but your account does not have access to the ${app}.`,
     a_requestAccess: 'Request access', a_requestSent: 'Access requested. The administrator will review it.', a_requested: 'Access requested — waiting for the administrator.',
-    a_changeTitle: 'Set a new password', a_changeSub: 'For your security, choose a new password before continuing.',
+    a_changeTitle: 'Choose your username and password', a_changeSub: 'Before you continue, choose your own username and a new password. Only you will know them.',
     a_current: 'Current (temporary) password', a_currentVoluntary: 'Current password', a_new: 'New password', a_changeBtn: 'Save new password',
     a_changed: 'Password changed', a_sessionEnded: 'Your session has ended. Please sign in again.', a_signedOut: 'You have been signed out.',
     a_loading: 'Loading…', a_retry: 'Try again', a_cantReach: 'Could not reach the server.',
-    err_INVALID_CREDENTIALS: 'Email or password is incorrect.',
+    err_INVALID_CREDENTIALS: 'Username or password is incorrect.',
+    err_USERNAME_TAKEN: 'This username is already taken. Choose another one.',
+    err_INVALID_USERNAME: 'A username has 3 to 30 English letters or numbers (dots, dashes and underscores are allowed, no spaces).',
+    err_NOTHING_TO_CHANGE: 'Nothing was changed.',
     err_ACCOUNT_LOCKED: 'Too many wrong passwords. This account is locked for 15 minutes.',
     err_ACCOUNT_PENDING: 'Your account is waiting for approval by the library administrator.',
     err_ACCOUNT_SUSPENDED: 'This account is suspended.', err_ACCOUNT_BANNED: 'This account has been blocked.',
@@ -43,16 +49,19 @@ export const AUTH_I18N = {
   },
   ar: {
     a_email: 'البريد الإلكتروني', a_password: 'كلمة المرور', a_name: 'الاسم الكامل', a_confirm: 'تأكيد كلمة المرور',
+    a_login: 'اسم المستخدم أو البريد الإلكتروني', a_username: 'اسم المستخدم', a_usernamePh: 'مثال: sarah.ahmad', a_emailOpt: 'البريد الإلكتروني (اختياري)',
+    a_usernameHint: 'اختره بنفسك: من 3 إلى 30 حرفًا إنجليزيًا أو رقمًا. يُسمح بالنقطة والشرطة والشرطة السفلية، دون مسافات.',
+    a_accountTitle: 'اسم المستخدم وكلمة المرور', a_newOptional: 'كلمة مرور جديدة (اتركها فارغة للإبقاء على الحالية)', a_saved: 'تم الحفظ',
     a_emailPh: 'name@school.edu', a_namePh: 'مثال: سارة أحمد', a_passHint: '8 أحرف على الأقل، تحتوي على حروف وأرقام.',
     a_remember: 'إبقائي مسجّلًا على هذا الجهاز', a_rememberHint: 'اتركه دون تحديد على الأجهزة المشتركة.',
     a_signIn: 'تسجيل الدخول', a_signingIn: 'جارٍ تسجيل الدخول…', a_forgot: 'نسيت كلمة المرور؟', a_noAccount: 'مستخدم جديد؟', a_create: 'إنشاء حساب',
     a_haveAccount: 'لديك حساب؟', a_backToSignIn: 'العودة لتسجيل الدخول', a_register: 'إنشاء الحساب', a_registering: 'جارٍ الإنشاء…',
     a_registerTitle: 'إنشاء حسابك', a_registerSub: (role) => `ستتم مراجعة حسابك قبل أن تتمكن من استخدام التطبيق بصفة ${role}.`,
     a_mismatch: 'كلمتا المرور غير متطابقتين.', a_required: 'يرجى تعبئة جميع الحقول.',
-    a_forgotTitle: 'إعادة تعيين كلمة المرور', a_forgotSub: 'أدخل بريدك الإلكتروني. سيستلم مسؤول المكتبة طلبك ويعطيك كلمة مرور مؤقتة.',
+    a_forgotTitle: 'إعادة تعيين كلمة المرور', a_forgotSub: 'أدخل اسم المستخدم أو البريد الإلكتروني. سيستلم معلم المكتبة طلبك ويعطيك كلمة مرور مؤقتة.',
     a_forgotBtn: 'إرسال الطلب', a_forgotDone: 'تم إرسال الطلب. سيتواصل معك مسؤول المكتبة بكلمة مرور مؤقتة.',
-    a_setupLink: 'الإعداد الأول (للمسؤول)', a_setupTitle: 'الإعداد الأول', a_setupSub: 'أنشئ حساب المسؤول الأول. تحتاج إلى مفتاح الإعداد من إعدادات الخادم (ADMIN_SETUP_KEY).',
-    a_setupKey: 'مفتاح الإعداد', a_setupBtn: 'إنشاء حساب المسؤول',
+    a_setupLink: 'الإعداد الأول (معلم المكتبة)', a_setupTitle: 'الإعداد الأول', a_setupSub: 'أنشئ حساب معلم المكتبة الأول بصلاحيات المسؤول الكاملة. اختر اسم المستخدم وكلمة المرور بنفسك. تحتاج إلى مفتاح الإعداد من إعدادات الخادم (ADMIN_SETUP_KEY).',
+    a_setupKey: 'مفتاح الإعداد', a_setupBtn: 'إنشاء حسابي',
     a_pendingTitle: 'بانتظار الموافقة', a_pendingBody: 'تم إنشاء حسابك. يجب أن يوافق عليه مسؤول المكتبة قبل أن تتمكن من تسجيل الدخول. يرجى المحاولة لاحقًا.',
     a_suspendedTitle: 'الحساب موقوف', a_suspendedBody: 'تم إيقاف حسابك من قبل مسؤول المكتبة.',
     a_bannedTitle: 'الحساب محظور', a_bannedBody: 'تم حظر حسابك من قبل مسؤول المكتبة.',
@@ -60,11 +69,14 @@ export const AUTH_I18N = {
     a_reason: 'السبب', a_until: 'حتى',
     a_noAccessTitle: 'لا تملك صلاحية لهذا التطبيق', a_noAccessBody: (app) => `أنت مسجّل الدخول، لكن حسابك لا يملك صلاحية الوصول إلى ${app}.`,
     a_requestAccess: 'طلب صلاحية', a_requestSent: 'تم طلب الصلاحية. سيراجعها المسؤول.', a_requested: 'تم طلب الصلاحية — بانتظار المسؤول.',
-    a_changeTitle: 'تعيين كلمة مرور جديدة', a_changeSub: 'لأمان حسابك، اختر كلمة مرور جديدة قبل المتابعة.',
+    a_changeTitle: 'اختر اسم المستخدم وكلمة المرور', a_changeSub: 'قبل المتابعة، اختر اسم مستخدم خاصًا بك وكلمة مرور جديدة. لن يعرفهما غيرك.',
     a_current: 'كلمة المرور الحالية (المؤقتة)', a_currentVoluntary: 'كلمة المرور الحالية', a_new: 'كلمة المرور الجديدة', a_changeBtn: 'حفظ كلمة المرور',
     a_changed: 'تم تغيير كلمة المرور', a_sessionEnded: 'انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.', a_signedOut: 'تم تسجيل خروجك.',
     a_loading: 'جارٍ التحميل…', a_retry: 'إعادة المحاولة', a_cantReach: 'تعذر الوصول إلى الخادم.',
-    err_INVALID_CREDENTIALS: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+    err_INVALID_CREDENTIALS: 'اسم المستخدم أو كلمة المرور غير صحيحة.',
+    err_USERNAME_TAKEN: 'اسم المستخدم هذا مستخدم بالفعل. اختر اسمًا آخر.',
+    err_INVALID_USERNAME: 'يتكون اسم المستخدم من 3 إلى 30 حرفًا إنجليزيًا أو رقمًا (يُسمح بالنقطة والشرطة والشرطة السفلية، دون مسافات).',
+    err_NOTHING_TO_CHANGE: 'لم يتم تغيير أي شيء.',
     err_ACCOUNT_LOCKED: 'محاولات خاطئة كثيرة. تم قفل الحساب لمدة 15 دقيقة.',
     err_ACCOUNT_PENDING: 'حسابك بانتظار موافقة مسؤول المكتبة.',
     err_ACCOUNT_SUSPENDED: 'هذا الحساب موقوف.', err_ACCOUNT_BANNED: 'هذا الحساب محظور.',
@@ -116,7 +128,7 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
       ${notice(msg, kind)}
       ${showSetup ? `<div class="auth-notice warn">${esc(t('a_setupSub'))}</div>` : ''}
       <form id="aForm" novalidate>
-        <div class="fg"><label for="aEmail">${esc(t('a_email'))}</label><input type="email" id="aEmail" autocomplete="username" inputmode="email" placeholder="${esc(t('a_emailPh'))}" required /></div>
+        <div class="fg"><label for="aLogin">${esc(t('a_login'))}</label><input type="text" id="aLogin" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="200" required /></div>
         <div class="fg"><label for="aPass">${esc(t('a_password'))}</label><input type="password" id="aPass" autocomplete="current-password" required /></div>
         <label class="check-row"><input type="checkbox" id="aRemember" /> <span>${esc(t('a_remember'))}<small>${esc(t('a_rememberHint'))}</small></span></label>
         <p class="field-err" id="aErr"></p>
@@ -132,12 +144,12 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
     if (showSetup) $('#aSetup', root).onclick = (e) => { e.preventDefault(); showSetupForm(); };
     $('#aForm', root).onsubmit = async (e) => {
       e.preventDefault();
-      const email = $('#aEmail', root).value.trim(), password = $('#aPass', root).value, remember = $('#aRemember', root).checked;
-      if (!email || !password) return fieldErr(t('a_required'));
+      const login = $('#aLogin', root).value.trim(), password = $('#aPass', root).value, remember = $('#aRemember', root).checked;
+      if (!login || !password) return fieldErr(t('a_required'));
       const btn = $('#aSubmit', root);
       btn.disabled = true; btn.textContent = t('a_signingIn'); fieldErr('');
       try {
-        const r = await api.call('auth.login', { email, password, remember });
+        const r = await api.call('auth.login', { login, password, remember });
         api.setSession(r.token, remember);
         route(r.me);
       } catch (err) {
@@ -158,7 +170,8 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
       <div class="auth-notice info">${esc(t('a_registerSub', roleName()))}</div>
       <form id="aForm" novalidate>
         <div class="fg"><label for="rName">${esc(t('a_name'))}</label><input id="rName" autocomplete="name" maxlength="80" placeholder="${esc(t('a_namePh'))}" /></div>
-        <div class="fg"><label for="rEmail">${esc(t('a_email'))}</label><input id="rEmail" type="email" inputmode="email" autocomplete="email" placeholder="${esc(t('a_emailPh'))}" /></div>
+        <div class="fg"><label for="rUser">${esc(t('a_username'))}</label><input id="rUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="30" placeholder="${esc(t('a_usernamePh'))}" /><small class="hint">${esc(t('a_usernameHint'))}</small></div>
+        <div class="fg"><label for="rEmail">${esc(t('a_emailOpt'))}</label><input id="rEmail" type="email" inputmode="email" autocomplete="email" placeholder="${esc(t('a_emailPh'))}" /></div>
         <div class="fg"><label for="rPass">${esc(t('a_password'))}</label><input id="rPass" type="password" autocomplete="new-password" /><small class="hint">${esc(t('a_passHint'))}</small></div>
         <div class="fg"><label for="rPass2">${esc(t('a_confirm'))}</label><input id="rPass2" type="password" autocomplete="new-password" /></div>
         <p class="field-err" id="aErr"></p>
@@ -168,13 +181,13 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
     $('#aBack', root).onclick = (e) => { e.preventDefault(); showLogin(); };
     $('#aForm', root).onsubmit = async (e) => {
       e.preventDefault();
-      const name = $('#rName', root).value.trim(), email = $('#rEmail', root).value.trim(), password = $('#rPass', root).value, p2 = $('#rPass2', root).value;
-      if (!name || !email || !password) return fieldErr(t('a_required'));
+      const name = $('#rName', root).value.trim(), username = $('#rUser', root).value.trim(), email = $('#rEmail', root).value.trim(), password = $('#rPass', root).value, p2 = $('#rPass2', root).value;
+      if (!name || !username || !password) return fieldErr(t('a_required'));
       if (password !== p2) return fieldErr(t('a_mismatch'));
       const btn = $('#aSubmit', root);
       btn.disabled = true; btn.textContent = t('a_registering'); fieldErr('');
       try {
-        const r = await api.call('auth.register', { name, email, password });
+        const r = await api.call('auth.register', { name, username, email, password });
         if (r.status === 'active' && r.token) { api.setSession(r.token, false); route(r.me); }
         else showStatus('ACCOUNT_PENDING');
       } catch (err) {
@@ -190,7 +203,7 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
       <h1>${esc(t('a_forgotTitle'))}</h1>
       <p class="sub">${esc(t('a_forgotSub'))}</p>
       <form id="aForm" novalidate>
-        <div class="fg"><label for="fEmail">${esc(t('a_email'))}</label><input id="fEmail" type="email" inputmode="email" autocomplete="email" /></div>
+        <div class="fg"><label for="fLogin">${esc(t('a_login'))}</label><input id="fLogin" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="200" /></div>
         <p class="field-err" id="aErr"></p>
         <button class="login-btn" id="aSubmit" type="submit">${esc(t('a_forgotBtn'))}</button>
       </form>
@@ -198,11 +211,11 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
     $('#aBack', root).onclick = (e) => { e.preventDefault(); showLogin(); };
     $('#aForm', root).onsubmit = async (e) => {
       e.preventDefault();
-      const email = $('#fEmail', root).value.trim();
-      if (!email) return fieldErr(t('a_required'));
+      const login = $('#fLogin', root).value.trim();
+      if (!login) return fieldErr(t('a_required'));
       const btn = $('#aSubmit', root);
       btn.disabled = true;
-      try { await api.call('auth.forgotPassword', { email }); showLogin(t('a_forgotDone'), 'ok'); }
+      try { await api.call('auth.forgotPassword', { login }); showLogin(t('a_forgotDone'), 'ok'); }
       catch (err) { btn.disabled = false; fieldErr(errorText(err, i18n)); }
     };
   }
@@ -215,7 +228,8 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
       <form id="aForm" novalidate>
         <div class="fg"><label for="sKey">${esc(t('a_setupKey'))}</label><input id="sKey" type="password" autocomplete="off" /></div>
         <div class="fg"><label for="sName">${esc(t('a_name'))}</label><input id="sName" autocomplete="name" maxlength="80" /></div>
-        <div class="fg"><label for="sEmail">${esc(t('a_email'))}</label><input id="sEmail" type="email" autocomplete="email" /></div>
+        <div class="fg"><label for="sUser">${esc(t('a_username'))}</label><input id="sUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="30" placeholder="${esc(t('a_usernamePh'))}" /><small class="hint">${esc(t('a_usernameHint'))}</small></div>
+        <div class="fg"><label for="sEmail">${esc(t('a_emailOpt'))}</label><input id="sEmail" type="email" autocomplete="email" /></div>
         <div class="fg"><label for="sPass">${esc(t('a_password'))}</label><input id="sPass" type="password" autocomplete="new-password" /><small class="hint">${esc(t('a_passHint'))}</small></div>
         <div class="fg"><label for="sPass2">${esc(t('a_confirm'))}</label><input id="sPass2" type="password" autocomplete="new-password" /></div>
         <p class="field-err" id="aErr"></p>
@@ -225,14 +239,14 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
     $('#aBack', root).onclick = (e) => { e.preventDefault(); showLogin(); };
     $('#aForm', root).onsubmit = async (e) => {
       e.preventDefault();
-      const setupKey = $('#sKey', root).value, name = $('#sName', root).value.trim(), email = $('#sEmail', root).value.trim(), password = $('#sPass', root).value;
-      if (!setupKey || !name || !email || !password) return fieldErr(t('a_required'));
+      const setupKey = $('#sKey', root).value, name = $('#sName', root).value.trim(), username = $('#sUser', root).value.trim(), email = $('#sEmail', root).value.trim(), password = $('#sPass', root).value;
+      if (!setupKey || !name || !username || !password) return fieldErr(t('a_required'));
       if (password !== $('#sPass2', root).value) return fieldErr(t('a_mismatch'));
       const btn = $('#aSubmit', root);
       btn.disabled = true;
       try {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const r = await api.call('system.setup', { setupKey, name, email, password, timeZone: tz });
+        const r = await api.call('system.setup', { setupKey, name, username, email, password, timeZone: tz });
         api.setSession(r.token, false);
         systemInfo = { ...systemInfo, needsSetup: false };
         route(r.me);
@@ -271,7 +285,7 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
       <div class="status-icon lock">${ICONS.lock}</div>
       <h1>${esc(t('a_noAccessTitle'))}</h1>
       <p class="sub">${esc(t('a_noAccessBody', appName()))}</p>
-      <div class="confirm-box"><div class="row"><span>${esc(t('a_email'))}</span><span>${esc(me.email)}</span></div></div>
+      <div class="confirm-box"><div class="row"><span>${esc(t(me.username ? 'a_username' : 'a_email'))}</span><span>${esc(me.username || me.email || '')}</span></div></div>
       ${requested ? `<div class="auth-notice ok">${esc(t('a_requested'))}</div>` : `<button class="login-btn" id="aReq" type="button">${esc(t('a_requestAccess'))}</button>`}
       <div class="auth-links"><a href="#" id="aOut">${esc(t('signOut'))}</a></div>`);
     $('#aOut', root).onclick = (e) => { e.preventDefault(); signOut(); };
@@ -286,11 +300,12 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
   function showChangePassword(me, voluntary = false, onDone) {
     if (!voluntary) { current = { screen: 'change', me, voluntary }; onSignedOut && onSignedOut(); }
     const html = `
-      <h1>${esc(t('a_changeTitle'))}</h1>
+      <h1>${esc(t(voluntary ? 'a_accountTitle' : 'a_changeTitle'))}</h1>
       ${voluntary ? '' : `<p class="sub">${esc(t('a_changeSub'))}</p>`}
       <form id="aForm" novalidate>
         <div class="fg"><label for="cCur">${esc(t(voluntary ? 'a_currentVoluntary' : 'a_current'))}</label><input id="cCur" type="password" autocomplete="current-password" /></div>
-        <div class="fg"><label for="cNew">${esc(t('a_new'))}</label><input id="cNew" type="password" autocomplete="new-password" /><small class="hint">${esc(t('a_passHint'))}</small></div>
+        <div class="fg"><label for="cUser">${esc(t('a_username'))}</label><input id="cUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="30" value="${esc(me.username || '')}" placeholder="${esc(t('a_usernamePh'))}" /><small class="hint">${esc(t('a_usernameHint'))}</small></div>
+        <div class="fg"><label for="cNew">${esc(t(voluntary ? 'a_newOptional' : 'a_new'))}</label><input id="cNew" type="password" autocomplete="new-password" /><small class="hint">${esc(t('a_passHint'))}</small></div>
         <div class="fg"><label for="cNew2">${esc(t('a_confirm'))}</label><input id="cNew2" type="password" autocomplete="new-password" /></div>
         <p class="field-err" id="aErr"></p>
         <button class="login-btn" id="aSubmit" type="submit">${esc(t('a_changeBtn'))}</button>
@@ -305,14 +320,15 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
     $('#aOut', scope).onclick = (e) => { e.preventDefault(); if (sheetHandle) sheetHandle.close(); else signOut(); };
     $('#aForm', scope).onsubmit = async (e) => {
       e.preventDefault();
-      const currentPassword = $('#cCur', scope).value, newPassword = $('#cNew', scope).value;
-      if (!currentPassword || !newPassword) return ferr(t('a_required'));
+      const currentPassword = $('#cCur', scope).value, newPassword = $('#cNew', scope).value, username = $('#cUser', scope).value.trim();
+      if (!currentPassword || !username || (!voluntary && !newPassword)) return ferr(t('a_required'));
       if (newPassword !== $('#cNew2', scope).value) return ferr(t('a_mismatch'));
       const btn = $('#aSubmit', scope);
       btn.disabled = true;
       try {
-        const r = await api.call('me.changePassword', { currentPassword, newPassword });
-        toast(t('a_changed'));
+        const r = await api.call('me.changePassword', { currentPassword, newPassword, username });
+        toast(newPassword ? t('a_changed') : t('a_saved'));
+        Object.assign(me, { username: r.me.username, mustChangePassword: r.me.mustChangePassword });
         if (sheetHandle) sheetHandle.close(); else route(r.me);
       } catch (err) { btn.disabled = false; ferr(errorText(err, i18n)); }
     };

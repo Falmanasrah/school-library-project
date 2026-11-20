@@ -1,14 +1,15 @@
 // Administration: accounts, booking periods, system settings, audit log, health check.
 import {
-  ApiError, bad, conflict, forbidden, notFound, str, multiline, int, bool, dateKey, email as vEmail, password as vPassword,
-  isValidTimeZone, daysBetween, zoned, ROLES, BOOKING_PERIOD_MS, textMatch
+  ApiError, bad, conflict, forbidden, notFound, str, multiline, int, bool, dateKey, optionalEmail, username as vUsername, password as vPassword,
+  isValidTimeZone, daysBetween, zoned, ROLES, ADMIN_ROLES, isAdminUser, BOOKING_PERIOD_MS, textMatch
 } from '../util.js';
 import { hashPassword, revokeUserSessions, forgetUser } from '../auth.js';
 import { audit, auditTx, bump, getSettings, forgetSettings, publicPeriod, bookingWindow, schoolNow, DEFAULT_SETTINGS } from '../core.js';
-import { createUserTx, userView, needsAttention } from './auth.js';
+import { createUserTx, userView, needsAttention, assertLoginFreeTx, changeUsername } from './auth.js';
 import { VERSION } from '../version.js';
 
-const ADMIN = { auth: 'active', apps: ['library'], roles: ['admin'] };
+// Library teachers can do everything an administrator can.
+const ADMIN = { auth: 'active', apps: ['library'], roles: ADMIN_ROLES };
 
 function validRoles(list) {
   if (!Array.isArray(list)) throw bad('INVALID_INPUT', 'Roles must be a list.');
@@ -24,12 +25,15 @@ async function getTarget(ctx, uid) {
   return u;
 }
 
+// There must always be at least one active library teacher or administrator left.
 async function assertNotLastAdmin(ctx, target, { removingAdmin }) {
-  if (!removingAdmin || !(target.roles || []).includes('admin')) return;
-  const admins = await ctx.db.query('users', { where: [['roles', 'array-contains', 'admin']] });
-  const others = admins.filter(a => a.id !== target.id && a.status === 'active');
-  if (others.length === 0) throw forbidden('LAST_ADMIN', 'This is the only active administrator. Make another account an administrator first.');
+  if (!removingAdmin || !isAdminUser(target)) return;
+  const lists = await Promise.all(ADMIN_ROLES.map(r => ctx.db.query('users', { where: [['roles', 'array-contains', r]] })));
+  const others = new Set(lists.flat().filter(a => a.id !== target.id && a.status === 'active').map(a => a.id));
+  if (others.size === 0) throw forbidden('LAST_ADMIN', 'This is the only active library teacher or administrator. Give another account that role first.');
 }
+
+const loginLabel = (u) => (u.username ? '@' + u.username : u.email || u.id);
 
 function notSelf(ctx, target, what) {
   if (target.id === ctx.user.id) throw forbidden('SELF_ACTION', `You cannot ${what} your own account.`);
@@ -63,7 +67,8 @@ export default {
     ...ADMIN,
     async handler(ctx, d) {
       const name = str(d.name, 'Name', { min: 2, max: 80 });
-      const email = vEmail(d.email);
+      const username = vUsername(d.username);
+      const email = optionalEmail(d.email);
       const pw = vPassword(d.password, 'Temporary password');
       const roles = validRoles(d.roles || []);
       if (!roles.length) throw bad('INVALID_ROLE', 'Choose at least one role.');
@@ -71,9 +76,9 @@ export default {
       const hash = await hashPassword(pw);
       const uid = ctx.db.newId();
       await ctx.db.runTransaction(async (tx) => {
-        if (await tx.get('emails', email)) throw conflict('EMAIL_TAKEN', 'An account with this email already exists.');
-        createUserTx(tx, ctx, { uid, name, email, hash, roles, requestedRoles: [], status: 'active', mustChangePassword: mustChange, registeredVia: 'admin' });
-        auditTx(tx, ctx, 'admin.user_created', { targetType: 'user', targetId: uid, summary: `Created account ${name} <${email}> with roles ${roles.join(', ')}` });
+        await assertLoginFreeTx(tx, username, email);
+        createUserTx(tx, ctx, { uid, name, username, email, hash, roles, requestedRoles: [], status: 'active', mustChangePassword: mustChange, registeredVia: 'admin' });
+        auditTx(tx, ctx, 'admin.user_created', { targetType: 'user', targetId: uid, summary: `Created account ${name} (@${username}) with roles ${roles.join(', ')}` });
       });
       await bump(ctx, 'users');
       return { id: uid };
@@ -86,21 +91,26 @@ export default {
       const target = await getTarget(ctx, d.uid);
       const patch = {};
       if (d.name !== undefined) patch.name = str(d.name, 'Name', { min: 2, max: 80 });
-      let newEmail = null;
-      if (d.email !== undefined) { const e = vEmail(d.email); if (e !== target.email) newEmail = e; }
+      let emailChange = false, newEmail = null;
+      if (d.email !== undefined) { newEmail = optionalEmail(d.email); emailChange = newEmail !== (target.email || null); }
+      let newUsername = null;
+      if (d.username !== undefined) { const u = vUsername(d.username); if (u !== target.username) newUsername = u; }
       if (d.roles !== undefined) {
         const roles = validRoles(d.roles);
-        const removingAdmin = (target.roles || []).includes('admin') && !roles.includes('admin');
-        if (removingAdmin && target.id === ctx.user.id) throw forbidden('SELF_ACTION', 'You cannot remove your own administrator role.');
+        if (!roles.length) throw bad('INVALID_ROLE', 'Choose at least one role.');
+        const removingAdmin = isAdminUser(target) && !isAdminUser({ roles });
+        if (removingAdmin && target.id === ctx.user.id) throw forbidden('SELF_ACTION', 'You cannot remove your own library teacher or administrator role.');
         await assertNotLastAdmin(ctx, target, { removingAdmin });
         patch.roles = roles;
         patch.requestedRoles = (target.requestedRoles || []).filter(r => !roles.includes(r));
       }
-      if (newEmail) {
+      if (newUsername) { await changeUsername(ctx, target, newUsername); patch.username = newUsername; }
+      if (emailChange) {
         await ctx.db.runTransaction(async (tx) => {
-          if (await tx.get('emails', newEmail)) throw conflict('EMAIL_TAKEN', 'Another account already uses this email.');
-          tx.delete('emails', target.email);
-          tx.create('emails', newEmail, { uid: target.id });
+          if (newEmail && await tx.get('emails', newEmail)) throw conflict('EMAIL_TAKEN', 'Another account already uses this email.');
+          const old = target.email ? await tx.get('emails', target.email) : null;
+          if (old && old.uid === target.id) tx.delete('emails', target.email);
+          if (newEmail) tx.create('emails', newEmail, { uid: target.id });
           tx.update('users', target.id, { email: newEmail });
         });
         patch.email = newEmail;
@@ -108,7 +118,7 @@ export default {
       const updated = await saveUser(ctx, target.id, patch);
       await audit(ctx, 'admin.user_updated', {
         targetType: 'user', targetId: target.id, summary: `Edited account ${updated.name}`,
-        details: { before: { name: target.name, email: target.email, roles: target.roles }, after: { name: updated.name, email: updated.email, roles: updated.roles } }
+        details: { before: { name: target.name, username: target.username || null, email: target.email || null, roles: target.roles }, after: { name: updated.name, username: updated.username || null, email: updated.email || null, roles: updated.roles } }
       });
       await bump(ctx, 'users');
       return { user: userView(updated) };
@@ -238,11 +248,13 @@ export default {
       notSelf(ctx, target, 'delete');
       await assertNotLastAdmin(ctx, target, { removingAdmin: true });
       await ctx.db.runTransaction(async (tx) => {
-        const idx = await tx.get('emails', target.email);
+        const idx = target.email ? await tx.get('emails', target.email) : null;
+        const uidx = target.username ? await tx.get('usernames', target.username) : null;
         tx.delete('users', target.id);
         tx.delete('credentials', target.id);
         if (idx && idx.uid === target.id) tx.delete('emails', target.email);
-        auditTx(tx, ctx, 'admin.user_deleted', { targetType: 'user', targetId: target.id, summary: `Deleted account ${target.name} <${target.email}>`, details: { user: userView(target) } });
+        if (uidx && uidx.uid === target.id) tx.delete('usernames', target.username);
+        auditTx(tx, ctx, 'admin.user_deleted', { targetType: 'user', targetId: target.id, summary: `Deleted account ${target.name} (${loginLabel(target)})`, details: { user: userView(target) } });
       });
       await revokeUserSessions(ctx.db, target.id);
       forgetUser(target.id);

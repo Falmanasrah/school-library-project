@@ -59,22 +59,24 @@ test('full school library workflow', async (t) => {
     const info = await ok('library', 'system.info');
     assert.equal(info.needsSetup, true);
     assert.equal(info.setupEnabled, true);
-    await fail('BAD_SETUP_KEY', 'library', 'system.setup', { setupKey: 'wrong', name: 'Head Librarian', email: 'admin@school.test', password: 'Admin-pass-1' });
-    await fail('WRONG_APP', 'teachers', 'system.setup', { setupKey: 'test-setup-key-123', name: 'X', email: 'x@school.test', password: 'Admin-pass-1' });
-    const r = await ok('library', 'system.setup', { setupKey: 'test-setup-key-123', name: 'Head Librarian', email: 'admin@school.test', password: 'Admin-pass-1', timeZone: TZ });
+    await fail('BAD_SETUP_KEY', 'library', 'system.setup', { setupKey: 'wrong', name: 'Head Librarian', username: 'admin', email: 'admin@school.test', password: 'Admin-pass-1' });
+    await fail('WRONG_APP', 'teachers', 'system.setup', { setupKey: 'test-setup-key-123', name: 'X', username: 'x', email: 'x@school.test', password: 'Admin-pass-1' });
+    const r = await ok('library', 'system.setup', { setupKey: 'test-setup-key-123', name: 'Head Librarian', username: 'admin', email: 'admin@school.test', password: 'Admin-pass-1', timeZone: TZ });
     assert.ok(r.token);
     assert.deepEqual(r.me.roles.sort(), ['admin', 'librarian']);
     S.admin = r.token;
-    await fail('ALREADY_SET_UP', 'library', 'system.setup', { setupKey: 'test-setup-key-123', name: 'Other', email: 'other@school.test', password: 'Admin-pass-1' });
+    await fail('ALREADY_SET_UP', 'library', 'system.setup', { setupKey: 'test-setup-key-123', name: 'Other', username: 'other', email: 'other@school.test', password: 'Admin-pass-1' });
     assert.equal((await ok('library', 'system.info')).needsSetup, false);
   });
 
   await t.test('teacher registers, waits for approval, admin approves', async () => {
-    await fail('WEAK_PASSWORD', 'teachers', 'auth.register', { name: 'Sarah Ahmad', email: 'sarah@school.test', password: 'short' });
-    const r = await ok('teachers', 'auth.register', { name: 'Sarah Ahmad', email: 'Sarah@School.test', password: 'Teacher-pass-1' });
+    await fail('WEAK_PASSWORD', 'teachers', 'auth.register', { name: 'Sarah Ahmad', username: 'sarah', email: 'sarah@school.test', password: 'short' });
+    const r = await ok('teachers', 'auth.register', { name: 'Sarah Ahmad', username: 'sarah', email: 'Sarah@School.test', password: 'Teacher-pass-1' });
     assert.equal(r.status, 'pending');
     assert.equal(r.token, undefined);
-    await fail('EMAIL_TAKEN', 'teachers', 'auth.register', { name: 'Sarah Again', email: 'sarah@school.test', password: 'Teacher-pass-1' });
+    await fail('EMAIL_TAKEN', 'teachers', 'auth.register', { name: 'Sarah Again', username: 'sarah2', email: 'sarah@school.test', password: 'Teacher-pass-1' });
+    await fail('USERNAME_TAKEN', 'teachers', 'auth.register', { name: 'Another Sarah', username: 'SARAH', password: 'Teacher-pass-1' });
+    await fail('INVALID_USERNAME', 'teachers', 'auth.register', { name: 'Spaces', username: 'has spaces', password: 'Teacher-pass-1' });
     await fail('ACCOUNT_PENDING', 'teachers', 'auth.login', { email: 'sarah@school.test', password: 'Teacher-pass-1' });
 
     const users = (await ok('library', 'admin.users.list', {}, S.admin)).items;
@@ -88,12 +90,13 @@ test('full school library workflow', async (t) => {
     S.sarahId = sarah.id;
 
     await fail('INVALID_CREDENTIALS', 'teachers', 'auth.login', { email: 'sarah@school.test', password: 'Wrong-pass-1' });
+    assert.equal((await ok('teachers', 'auth.login', { login: 'Sarah', password: 'Teacher-pass-1' })).me.username, 'sarah');
     const login = await ok('teachers', 'auth.login', { email: 'sarah@school.test', password: 'Teacher-pass-1', remember: true });
     assert.equal(login.me.hasAccess, true);
     S.sarah = login.token;
 
     // A second teacher, created directly by the administrator.
-    await ok('library', 'admin.user.create', { name: 'Khalid Omar', email: 'khalid@school.test', password: 'Temp-pass-1', roles: ['teacher'], mustChangePassword: false }, S.admin);
+    await ok('library', 'admin.user.create', { name: 'Khalid Omar', username: 'khalid', email: 'khalid@school.test', password: 'Temp-pass-1', roles: ['teacher'], mustChangePassword: false }, S.admin);
     S.khalid = (await ok('teachers', 'auth.login', { email: 'khalid@school.test', password: 'Temp-pass-1' })).token;
   });
 
@@ -160,19 +163,31 @@ test('full school library workflow', async (t) => {
     assert.equal(again.changed, false);
   });
 
-  await t.test('librarian account with temporary password must change it first', async () => {
-    await ok('library', 'admin.user.create', { name: 'Mona Librarian', email: 'mona@school.test', password: 'Temp-pass-9', roles: ['librarian'] }, S.admin);
-    const login = await ok('library', 'auth.login', { email: 'mona@school.test', password: 'Temp-pass-9' });
+  await t.test('library teacher chooses her own username and password, and has every admin power', async () => {
+    // Created with a temporary username and password (no email needed)...
+    await ok('library', 'admin.user.create', { name: 'Mona Librarian', username: 'temp.mona', password: 'Temp-pass-9', roles: ['librarian'] }, S.admin);
+    const login = await ok('library', 'auth.login', { login: 'temp.mona', password: 'Temp-pass-9' });
     assert.equal(login.me.mustChangePassword, true);
     await fail('PASSWORD_CHANGE_REQUIRED', 'library', 'library.sync', {}, login.token);
     await fail('WRONG_PASSWORD', 'library', 'me.changePassword', { currentPassword: 'nope', newPassword: 'Mona-pass-22' }, login.token);
-    await ok('library', 'me.changePassword', { currentPassword: 'Temp-pass-9', newPassword: 'Mona-pass-22' }, login.token);
-    S.mona = login.token;
+    await fail('USERNAME_TAKEN', 'library', 'me.changePassword', { currentPassword: 'Temp-pass-9', username: 'sarah', newPassword: 'Mona-pass-22' }, login.token);
+    await fail('INVALID_USERNAME', 'library', 'me.changePassword', { currentPassword: 'Temp-pass-9', username: 'mona l', newPassword: 'Mona-pass-22' }, login.token);
+    // ...then picks her own at first sign-in.
+    const ch = await ok('library', 'me.changePassword', { currentPassword: 'Temp-pass-9', username: 'Mona', newPassword: 'Mona-pass-22' }, login.token);
+    assert.equal(ch.me.username, 'mona');
+    assert.equal(ch.me.mustChangePassword, false);
+    await fail('INVALID_CREDENTIALS', 'library', 'auth.login', { login: 'temp.mona', password: 'Mona-pass-22' });
+    // Later she can change just her username, keeping her password and session.
+    await ok('library', 'me.changePassword', { currentPassword: 'Mona-pass-22', username: 'mona.l' }, login.token);
+    await fail('NOTHING_TO_CHANGE', 'library', 'me.changePassword', { currentPassword: 'Mona-pass-22', username: 'mona.l' }, login.token);
+    S.mona = (await ok('library', 'auth.login', { login: 'MONA.L', password: 'Mona-pass-22' })).token;
+    await ok('library', 'me.get', {}, login.token);
     const sync = await ok('library', 'library.sync', {}, S.mona);
     assert.equal(sync.pending.length, 3);
-    assert.equal(sync.attention.length, 0, 'librarians do not get the admin account list');
-    await fail('FORBIDDEN', 'library', 'admin.users.list', {}, S.mona);
-    await fail('FORBIDDEN', 'library', 'admin.user.ban', { uid: S.sarahId, reason: 'x' }, S.mona);
+    // Library teachers can do everything an administrator can.
+    assert.equal((await ok('library', 'me.get', {}, S.mona)).me.isAdmin, true);
+    assert.ok((await ok('library', 'admin.users.list', {}, S.mona)).items.some(u => u.username === 'mona.l'));
+    assert.ok((await ok('library', 'admin.periods.list', {}, S.mona)));
   });
 
   await t.test('booking approval and rejection travel back to the Teachers App', async () => {
@@ -252,12 +267,13 @@ test('full school library workflow', async (t) => {
   });
 
   await t.test('floor supervisor issues permission slips that arrive in the Library App', async () => {
-    const reg = await ok('supervisors', 'auth.register', { name: 'Huda Supervisor', email: 'huda@school.test', password: 'Huda-pass-1' });
+    // Email is optional: Huda registers with just a username.
+    const reg = await ok('supervisors', 'auth.register', { name: 'Huda Supervisor', username: 'huda', password: 'Huda-pass-1' });
     assert.equal(reg.status, 'pending');
-    const pending = (await ok('library', 'admin.users.list', {}, S.admin)).items.find(u => u.email === 'huda@school.test');
+    const pending = (await ok('library', 'admin.users.list', {}, S.admin)).items.find(u => u.username === 'huda');
     assert.deepEqual(pending.requestedRoles, ['supervisor']);
     await ok('library', 'admin.user.approve', { uid: pending.id }, S.admin);
-    S.huda = (await ok('supervisors', 'auth.login', { email: 'huda@school.test', password: 'Huda-pass-1' })).token;
+    S.huda = (await ok('supervisors', 'auth.login', { login: 'huda', password: 'Huda-pass-1' })).token;
     await fail('WRONG_APP', 'supervisors', 'library.sync', {}, S.huda);
     await fail('NO_APP_ACCESS', 'supervisors', 'supervisor.sync', {}, (await ok('supervisors', 'auth.login', { email: 'sarah@school.test', password: 'Teacher-pass-1' })).token);
 
@@ -303,7 +319,7 @@ test('full school library workflow', async (t) => {
     assert.deepEqual(sup.slips.map(s => s.status).sort(), ['cancelled', 'rejected', 'used']);
 
     // Supervisors only see their own slips.
-    await ok('library', 'admin.user.create', { name: 'Second Supervisor', email: 'sup2@school.test', password: 'Sup2-pass-1', roles: ['supervisor'], mustChangePassword: false }, S.admin);
+    await ok('library', 'admin.user.create', { name: 'Second Supervisor', username: 'sup2', email: 'sup2@school.test', password: 'Sup2-pass-1', roles: ['supervisor'], mustChangePassword: false }, S.admin);
     const sup2 = (await ok('supervisors', 'auth.login', { email: 'sup2@school.test', password: 'Sup2-pass-1' })).token;
     assert.equal((await ok('supervisors', 'supervisor.sync', {}, sup2)).slips.length, 0);
     await fail('FORBIDDEN', 'supervisors', 'slip.cancel', { id: s2.id }, sup2);
@@ -347,6 +363,7 @@ test('full school library workflow', async (t) => {
     // Forgot password -> admin sees the request -> sets a temporary password.
     await ok('teachers', 'auth.forgotPassword', { email: 'sarah@school.test' });
     await ok('teachers', 'auth.forgotPassword', { email: 'nobody@school.test' }); // same answer, no leak
+    await ok('teachers', 'auth.forgotPassword', { login: 'no.such.user' });
     let u = (await ok('library', 'admin.users.list', {}, S.admin)).items.find(x => x.id === S.sarahId);
     assert.ok(u.resetRequestedAt);
     await ok('library', 'admin.user.setPassword', { uid: S.sarahId, password: 'Reset-pass-7' }, S.admin);
@@ -366,8 +383,11 @@ test('full school library workflow', async (t) => {
     await ok('library', 'admin.user.unlock', { uid: khalid.id }, S.admin);
     await ok('teachers', 'auth.login', { email: 'khalid@school.test', password: 'Temp-pass-1' });
 
-    // Edit: change email and roles.
-    await ok('library', 'admin.user.update', { uid: khalid.id, name: 'Khalid Omar Saleh', email: 'k.omar@school.test', roles: ['teacher', 'supervisor'] }, S.admin);
+    // Edit: change username, email and roles.
+    await fail('USERNAME_TAKEN', 'library', 'admin.user.update', { uid: khalid.id, username: 'huda' }, S.admin);
+    await ok('library', 'admin.user.update', { uid: khalid.id, name: 'Khalid Omar Saleh', username: 'k.saleh', email: 'k.omar@school.test', roles: ['teacher', 'supervisor'] }, S.admin);
+    await fail('INVALID_CREDENTIALS', 'teachers', 'auth.login', { login: 'khalid', password: 'Temp-pass-1' });
+    assert.equal((await ok('teachers', 'auth.login', { login: 'k.saleh', password: 'Temp-pass-1' })).me.name, 'Khalid Omar Saleh');
     await fail('INVALID_CREDENTIALS', 'teachers', 'auth.login', { email: 'khalid@school.test', password: 'Temp-pass-1' });
     const ks = await ok('supervisors', 'auth.login', { email: 'k.omar@school.test', password: 'Temp-pass-1' });
     assert.equal(ks.me.hasAccess, true);
@@ -375,7 +395,9 @@ test('full school library workflow', async (t) => {
 
     // The last administrator is protected.
     const me = (await ok('library', 'me.get', {}, S.admin)).me;
-    await fail('SELF_ACTION', 'library', 'admin.user.update', { uid: me.id, roles: ['librarian'] }, S.admin);
+    await ok('library', 'admin.user.update', { uid: me.id, roles: ['librarian'] }, S.admin); // still a library teacher, so still allowed
+    await fail('SELF_ACTION', 'library', 'admin.user.update', { uid: me.id, roles: ['teacher'] }, S.admin);
+    await ok('library', 'admin.user.update', { uid: me.id, roles: ['admin', 'librarian'] }, S.admin);
     await fail('SELF_ACTION', 'library', 'admin.user.delete', { uid: me.id }, S.admin);
 
     // Delete: the account disappears, its records stay, the email can be reused.
@@ -384,7 +406,7 @@ test('full school library workflow', async (t) => {
     await fail('ACCOUNT_DELETED', 'supervisors', 'supervisor.sync', {}, ks.token).catch(() => fail('SESSION_EXPIRED', 'supervisors', 'supervisor.sync', {}, ks.token));
     const hist = await ok('library', 'bookings.search', { from: addDays(today(), -10), to: addDays(today(), 30) }, S.admin);
     assert.ok(hist.items.some(b => b.teacherName === 'Khalid Omar'), 'records of deleted accounts are kept');
-    assert.equal((await ok('teachers', 'auth.register', { name: 'New Khalid', email: 'k.omar@school.test', password: 'Again-pass-1' })).status, 'pending');
+    assert.equal((await ok('teachers', 'auth.register', { name: 'New Khalid', username: 'k.omar', email: 'k.omar@school.test', password: 'Again-pass-1' })).status, 'pending');
   });
 
   await t.test('admin edits and deletes records', async () => {
@@ -398,19 +420,21 @@ test('full school library workflow', async (t) => {
     const target = slips.items.find(s => s.status === 'rejected');
     await ok('library', 'admin.slip.update', { id: target.id, notes: 'Checked with supervisor' }, S.admin);
     await ok('library', 'admin.slip.delete', { id: target.id }, S.admin);
-    await fail('FORBIDDEN', 'library', 'admin.slip.delete', { id: S.slip.id }, S.mona);
+    await ok('library', 'admin.slip.update', { id: S.slip.id, notes: 'Checked by the library teacher' }, S.mona);
+    await fail('WRONG_APP', 'teachers', 'admin.slip.update', { id: S.slip.id, notes: 'x' }, S.sarah);
   });
 
   await t.test('system settings: registration controls', async () => {
     await ok('library', 'admin.settings.update', { registrationOpen: false }, S.admin);
-    await fail('REGISTRATION_CLOSED', 'teachers', 'auth.register', { name: 'Late Teacher', email: 'late@school.test', password: 'Late-pass-1' });
+    await fail('REGISTRATION_CLOSED', 'teachers', 'auth.register', { name: 'Late Teacher', username: 'late', email: 'late@school.test', password: 'Late-pass-1' });
     await ok('library', 'admin.settings.update', { registrationOpen: true, allowedDomains: 'school.test', autoApproveTeachers: true }, S.admin);
-    await fail('DOMAIN_NOT_ALLOWED', 'teachers', 'auth.register', { name: 'Outsider', email: 'someone@gmail.com', password: 'Outs-pass-1' });
-    const r = await ok('teachers', 'auth.register', { name: 'Auto Teacher', email: 'auto@school.test', password: 'Auto-pass-1' });
+    await fail('DOMAIN_NOT_ALLOWED', 'teachers', 'auth.register', { name: 'Outsider', username: 'someone', email: 'someone@gmail.com', password: 'Outs-pass-1' });
+    await fail('DOMAIN_NOT_ALLOWED', 'teachers', 'auth.register', { name: 'No Email', username: 'no.email', password: 'Outs-pass-1' });
+    const r = await ok('teachers', 'auth.register', { name: 'Auto Teacher', username: 'auto', email: 'auto@school.test', password: 'Auto-pass-1' });
     assert.equal(r.status, 'active');
     assert.ok(r.token);
     // Library accounts always need approval, even with auto-approve on.
-    assert.equal((await ok('library', 'auth.register', { name: 'Lib Applicant', email: 'lib2@school.test', password: 'Lib2-pass-1' })).status, 'pending');
+    assert.equal((await ok('library', 'auth.register', { name: 'Lib Applicant', username: 'lib2', email: 'lib2@school.test', password: 'Lib2-pass-1' })).status, 'pending');
     await fail('INVALID_DOMAIN', 'library', 'admin.settings.update', { allowedDomains: 'not a domain!' }, S.admin);
     const health = await ok('library', 'admin.system.health', {}, S.admin);
     assert.equal(health.ok, true);
@@ -428,7 +452,7 @@ test('full school library workflow', async (t) => {
     assert.equal(approved.actorName, 'Mona Librarian');
     const filtered = await ok('library', 'admin.audit.search', { from: addDays(today(), -1), to: today(), action: 'slip.' }, S.admin);
     assert.ok(filtered.items.every(i => i.action.startsWith('slip.')));
-    await fail('FORBIDDEN', 'library', 'admin.audit.search', { from: today(), to: today() }, S.mona);
+    assert.ok((await ok('library', 'admin.audit.search', { from: today(), to: today() }, S.mona)).items.length > 0);
   });
 
   await t.test('request hygiene: other websites, unknown actions, bad input', async () => {

@@ -66,6 +66,8 @@ async function loadBookingTx(tx, id) {
 }
 
 const LIB_ROLES = ['librarian', 'admin'];
+// Corrections and deletions: library teachers have the same powers as administrators.
+const ADMIN_ROLES = LIB_ROLES;
 
 export default {
   /* ---------------- Teachers App ---------------- */
@@ -224,7 +226,7 @@ export default {
 
   /* ---------------- Admin ---------------- */
   'admin.booking.create': {
-    auth: 'active', apps: ['library'], roles: ['admin'],
+    auth: 'active', apps: ['library'], roles: ADMIN_ROLES,
     async handler(ctx, d) {
       const f = validateBookingFields(d);
       const status = oneOf(d.status || 'approved', 'Status', ['pending', 'approved']);
@@ -250,7 +252,7 @@ export default {
   },
 
   'admin.booking.update': {
-    auth: 'active', apps: ['library'], roles: ['admin'],
+    auth: 'active', apps: ['library'], roles: ADMIN_ROLES,
     async handler(ctx, d) {
       await ctx.db.runTransaction(async (tx) => {
         const { b, slot, rawSlot } = await loadBookingTx(tx, d.id);
@@ -275,7 +277,7 @@ export default {
   },
 
   'admin.booking.delete': {
-    auth: 'active', apps: ['library'], roles: ['admin'],
+    auth: 'active', apps: ['library'], roles: ADMIN_ROLES,
     async handler(ctx, d) {
       await ctx.db.runTransaction(async (tx) => {
         const { b, slot } = await loadBookingTx(tx, d.id);

@@ -38,7 +38,7 @@ const D = {
     kitReady: (n) => `Saved ${n}`, kitFail: 'The kit could not be made. Check the connection and try again.',
     kitNote: 'The kit points to this website, so the apps always open the latest version.',
     goodHead: 'Good to know',
-    good: ['The apps update themselves automatically. You never need to reinstall.', 'They work in the browser or installed, on phones, tablets and computers.', 'Downloading needs no account. Seeing school data needs a school account approved by the library administrator.', 'The apps need the internet or the school network to load school data.'],
+    good: ['The apps update themselves automatically. You never need to reinstall.', 'They work in the browser or installed, on phones, tablets and computers.', 'Downloading needs no account. Seeing school data needs a school account approved by the library teacher. Everyone chooses their own username and password.', 'The apps need the internet or the school network to load school data.'],
     foot: (v) => `Version ${v}`
   },
   ar: {
@@ -69,7 +69,7 @@ const D = {
     kitReady: (n) => `تم حفظ ${n}`, kitFail: 'تعذّر إنشاء الحزمة. تحقّق من الاتصال وحاول مرة أخرى.',
     kitNote: 'تشير الحزمة إلى هذا الموقع، لذلك تفتح التطبيقات دائمًا أحدث إصدار.',
     goodHead: 'معلومات مهمة',
-    good: ['تُحدَّث التطبيقات تلقائيًا، ولا حاجة لإعادة التثبيت.', 'تعمل في المتصفح أو بعد التثبيت، على الهواتف والأجهزة اللوحية والحواسيب.', 'التنزيل لا يحتاج إلى حساب، أما عرض بيانات المدرسة فيتطلب حساب مدرسة يعتمده مسؤول المكتبة.', 'تحتاج التطبيقات إلى الإنترنت أو شبكة المدرسة لتحميل بيانات المدرسة.'],
+    good: ['تُحدَّث التطبيقات تلقائيًا، ولا حاجة لإعادة التثبيت.', 'تعمل في المتصفح أو بعد التثبيت، على الهواتف والأجهزة اللوحية والحواسيب.', 'التنزيل لا يحتاج إلى حساب، أما عرض بيانات المدرسة فيتطلب حساب مدرسة يعتمده معلم المكتبة، ويختار كل شخص اسم المستخدم وكلمة المرور بنفسه.', 'تحتاج التطبيقات إلى الإنترنت أو شبكة المدرسة لتحميل بيانات المدرسة.'],
     foot: (v) => `الإصدار ${v}`
   }
 };
