@@ -75,6 +75,28 @@ All of this is in **Admin**:
   - Teachers can only book while a period is open, and only dates inside its booking range.
   - An administrator opens the next period. It can start immediately or at a set time.
 
+### 1.6 Free second address (when `.vercel.app` is blocked)
+
+Some internet providers cut **every** address that ends in `.vercel.app` ("connection was reset"). A browser with a VPN still gets through, which is why it can seem to work in one Chrome profile and not another. A free Cloudflare Worker gives the site a second address, such as `https://school-library.NAME.workers.dev`, and forwards everything to Vercel from Cloudflare's side. The apps, the server and the database stay on Vercel; nothing is stored at Cloudflare.
+
+1. **The shared secret.** Use the value in `.data/PROXY_SECRET.txt` (made locally and never uploaded), or any long random value of 16+ characters.
+2. **Cloudflare:**
+   1. Sign up for free at <https://dash.cloudflare.com>.
+   2. Open **Workers & Pages → Create → Start with Hello World!** Name it `school-library`, then **Deploy**. The first time, Cloudflare asks you to pick your `workers.dev` name.
+   3. Click **Edit code**, delete everything, paste the whole of [`cloudflare/worker.js`](cloudflare/worker.js), then **Deploy**.
+   4. Open **Settings → Variables and Secrets → Add**: type **Secret**, name `PROXY_SECRET`, value = the shared secret. Then **Deploy**.
+3. **Vercel:** in **Settings → Environment Variables** add `PROXY_SECRET` with **the same value**, then **Redeploy**.
+4. **Check:** open `https://school-library.NAME.workers.dev/api/rpc`. It must show `"secondAddress":"ok"`. If it says the secret is not the same, copy the value again in both places.
+5. **Use it:**
+   - Give people the new address, or open its `/download/` page: the QR code and USB kits made there use the new address.
+   - Remake the ready folders: `npm run kits -- https://school-library.NAME.workers.dev`
+   - People who used the old address sign in once more on the new one.
+
+Good to know:
+- The server still blocks other websites and still counts failed sign-ins per person: the Worker passes on each visitor's real IP, and the server believes it only with the shared secret.
+- The free Cloudflare plan allows 100,000 requests a day. An open app checks for changes every 6 seconds while it is on screen (about 600 requests an hour). If the school ever reaches the limit, Cloudflare's paid Workers plan is $5 a month.
+- The old `.vercel.app` address keeps working for everyone whose provider does not block it.
+
 ---
 
 ## 2. Publishing an update
@@ -140,7 +162,8 @@ Web filters treat that pattern as risky, and pages with a password form on a sha
 
 The block itself is decided by the school's web filter (for example FortiGuard, Cisco Umbrella, Securly, Lightspeed, GoGuardian or Sophos), not by the website. Many filters block **all** new or "unrated" `*.vercel.app` sites, however secure they are. To fix that:
 
-1. **Ask school IT to allow the address.** Give them the exact domain (for example `your-site.vercel.app`). This is the quickest fix.
+1. **Use the free second address** (see 1.6). This also fixes internet providers that block `.vercel.app` at home.
+1. **Ask school IT to allow the address.** Give them the exact domain (for example `your-site.vercel.app`).
 2. **Use a custom domain** (Vercel → Settings → Domains), ideally a subdomain of the school's own domain such as `library.yourschool.edu.jo`. Filters and IT trust the school's own domain, and the address is easier to type.
 3. **Ask the filter vendor to re-categorise the site** as *Education*. Most vendors have a free form, for example FortiGuard's *Web Filter Lookup*, Cisco Talos *Reputation Center* and Palo Alto *URL Filtering* "Test A Site". School IT can tell you which filter they use.
 4. **Check Google Safe Browsing** at <https://transparencyreport.google.com/safe-browsing/search>. If the site is flagged, add it to Google Search Console and request a review.

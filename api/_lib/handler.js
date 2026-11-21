@@ -5,6 +5,7 @@ import { getDb, getSettings, audit } from './core.js';
 import { loadSession, loadUser, deleteSession, forgetUser } from './auth.js';
 import { ACTIONS } from './actions/index.js';
 import { VERSION } from './version.js';
+import { createHash, timingSafeEqual } from 'node:crypto';
 
 const MAX_BODY = 200 * 1024;
 
@@ -33,7 +34,21 @@ async function readBody(req) {
   return text ? JSON.parse(text) : {};
 }
 
-function clientIp(req) {
+// The free second address (cloudflare/worker.js) forwards requests here. It proves itself with
+// PROXY_SECRET; only then are its headers believed for the visitor's IP and public address.
+// Returns null (not forwarded), true (trusted) or false (wrong secret).
+function forwarded(req) {
+  const given = req.headers['x-sls-proxy-key'];
+  if (given === undefined) return null;
+  const secret = process.env.PROXY_SECRET || '';
+  if (secret.length < 16 || typeof given !== 'string') return false;
+  const a = createHash('sha256').update(given).digest();
+  const b = createHash('sha256').update(secret).digest();
+  return timingSafeEqual(a, b);
+}
+
+function clientIp(req, viaProxy) {
+  if (viaProxy && req.headers['x-sls-client-ip']) return String(req.headers['x-sls-client-ip']).trim();
   const fwd = req.headers['x-forwarded-for'];
   if (fwd) return String(fwd).split(',')[0].trim();
   return req.headers['x-real-ip'] || req.socket?.remoteAddress || 'unknown';
@@ -76,16 +91,23 @@ async function authenticate(ctx, spec) {
 export async function handle(req, res) {
   const now = Date.now();
   try {
-    if (req.method === 'GET') return send(res, 200, { ok: true, data: { status: 'ok', version: VERSION }, serverTime: now });
+    const via = forwarded(req);
+    if (req.method === 'GET') {
+      const data = { status: 'ok', version: VERSION };
+      if (via !== null) data.secondAddress = via ? 'ok' : 'PROXY_SECRET is not the same in Cloudflare and Vercel';
+      return send(res, 200, { ok: true, data, serverTime: now });
+    }
     if (req.method !== 'POST') return send(res, 405, { ok: false, error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST.' } });
+    if (via === false) throw new ApiError(403, 'PROXY_NOT_TRUSTED', 'The second address is not set up correctly: PROXY_SECRET must be the same in Cloudflare and Vercel.');
 
-    // Only pages served from this same site may call the API.
+    // Only pages served from this same site (or its trusted second address) may call the API.
     const origin = req.headers.origin;
     if (origin) {
       let originHost = '';
       try { originHost = new URL(origin).host; } catch { /* invalid */ }
-      const host = req.headers['x-forwarded-host'] || req.headers.host;
-      if (!originHost || originHost !== host) throw new ApiError(403, 'BAD_ORIGIN', 'Requests from other websites are not allowed.');
+      const hosts = [req.headers['x-forwarded-host'] || req.headers.host];
+      if (via && req.headers['x-sls-public-host']) hosts.push(String(req.headers['x-sls-public-host']));
+      if (!originHost || !hosts.includes(originHost)) throw new ApiError(403, 'BAD_ORIGIN', 'Requests from other websites are not allowed.');
     }
 
     let body;
@@ -99,7 +121,7 @@ export async function handle(req, res) {
     if (spec.apps && !spec.apps.includes(app)) throw new ApiError(403, 'WRONG_APP', 'This action is not available in this app.');
 
     const db = await getDb();
-    const ctx = { req, db, app, now, ip: clientIp(req), ua: req.headers['user-agent'] || '' };
+    const ctx = { req, db, app, now, ip: clientIp(req, via === true), ua: req.headers['user-agent'] || '' };
     ctx.settings = await getSettings(db);
     if (spec.auth !== 'public') await authenticate(ctx, spec);
 
