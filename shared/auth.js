@@ -17,11 +17,10 @@ export const AUTH_I18N = {
     a_mismatch: 'The two passwords do not match.', a_required: 'Please fill in every field.',
     a_forgotTitle: 'Reset your password', a_forgotSub: 'Enter your username or email. The library teacher will receive your request and give you a temporary password.',
     a_forgotBtn: 'Send request', a_forgotDone: 'Request sent. The library administrator will contact you with a temporary password.',
-    a_setupLink: 'First-time setup (library teacher)', a_setupTitle: 'Create your account', a_setupSub: 'This is the first library teacher, with full administrator rights. Choose your own username and password.',
-    a_setupBoxTitle: 'Enter the setup password', a_setupBoxSub: 'You only do this once. It unlocks the first library teacher account, then this box is gone for good.',
-    a_setupKeyHint: 'This is ADMIN_SETUP_KEY from Vercel. It is not PROXY_SECRET and not your account password.', a_setupShow: 'Show what I typed', a_setupContinue: 'Continue',
-    a_setupStep1: 'Step 1 of 2', a_setupStep2: 'Step 2 of 2', a_setupFirst: 'The library teacher has not finished first-time setup yet.', a_setupFirstLink: 'Open the Library Teachers App',
-    a_setupKey: 'Setup password', a_setupBtn: 'Create my account',
+    a_setupTitle: 'Create the library teacher account', a_setupSub: 'The first account is the library teacher, with full admin rights. Choose your own username and password.',
+    a_setupKeyHint: 'Only needed for this first account. It is ADMIN_SETUP_KEY in Vercel, not PROXY_SECRET.', a_setupShow: 'Show',
+    a_setupFirst: 'The library teacher has not finished first-time setup yet.', a_setupFirstLink: 'Open the Library Teachers App',
+    a_setupKey: 'Secret password', a_setupBtn: 'Create my account',
     a_pendingTitle: 'Waiting for approval', a_pendingBody: 'Your account has been created. The library administrator must approve it before you can sign in. Please check back later.',
     a_suspendedTitle: 'Account suspended', a_suspendedBody: 'Your account has been suspended by the library administrator.',
     a_bannedTitle: 'Account blocked', a_bannedBody: 'Your account has been blocked by the library administrator.',
@@ -44,7 +43,7 @@ export const AUTH_I18N = {
     err_EMAIL_TAKEN: 'An account with this email already exists. Sign in instead, or use "Forgot password?".',
     err_WEAK_PASSWORD: 'Password must be at least 8 characters and contain letters and numbers.',
     err_INVALID_EMAIL: 'Enter a valid email address.', err_REGISTRATION_CLOSED: 'Registration is closed. Ask the library administrator to create your account.',
-    err_DOMAIN_NOT_ALLOWED: 'Please register with your school email address.', err_BAD_SETUP_KEY: 'That is not the setup password. Copy ADMIN_SETUP_KEY from Vercel again.',
+    err_DOMAIN_NOT_ALLOWED: 'Please register with your school email address.', err_BAD_SETUP_KEY: 'That is not the secret password. Copy ADMIN_SETUP_KEY from Vercel again.',
     err_SETUP_DISABLED: 'ADMIN_SETUP_KEY is missing in Vercel. Add it, redeploy, then come back.',
     err_HOST_LOCKED: 'Vercel is locking this site. Turn it off in Vercel: Settings, then Deployment Protection.', err_ALREADY_SET_UP: 'The system is already set up. Sign in instead.',
     err_WRONG_PASSWORD: 'Your current password is not correct.', err_SAME_PASSWORD: 'Choose a password different from the current one.',
@@ -64,11 +63,10 @@ export const AUTH_I18N = {
     a_mismatch: 'كلمتا المرور غير متطابقتين.', a_required: 'يرجى تعبئة جميع الحقول.',
     a_forgotTitle: 'إعادة تعيين كلمة المرور', a_forgotSub: 'أدخل اسم المستخدم أو البريد الإلكتروني. سيستلم معلم المكتبة طلبك ويعطيك كلمة مرور مؤقتة.',
     a_forgotBtn: 'إرسال الطلب', a_forgotDone: 'تم إرسال الطلب. سيتواصل معك مسؤول المكتبة بكلمة مرور مؤقتة.',
-    a_setupLink: 'الإعداد الأول (معلم المكتبة)', a_setupTitle: 'أنشئ حسابك', a_setupSub: 'هذا حساب معلم المكتبة الأول بصلاحيات المسؤول الكاملة. اختر اسم المستخدم وكلمة المرور بنفسك.',
-    a_setupBoxTitle: 'أدخل كلمة مرور الإعداد', a_setupBoxSub: 'تفعل هذا مرة واحدة فقط. تفتح هذه الخطوة حساب معلم المكتبة الأول، ثم يختفي هذا المربع نهائيًا.',
-    a_setupKeyHint: 'هذه هي قيمة ADMIN_SETUP_KEY في Vercel، وليست PROXY_SECRET وليست كلمة مرور حسابك.', a_setupShow: 'إظهار ما كتبته', a_setupContinue: 'متابعة',
-    a_setupStep1: 'الخطوة 1 من 2', a_setupStep2: 'الخطوة 2 من 2', a_setupFirst: 'لم يُكمل معلم المكتبة الإعداد الأول بعد.', a_setupFirstLink: 'افتح تطبيق معلمي المكتبة',
-    a_setupKey: 'كلمة مرور الإعداد', a_setupBtn: 'إنشاء حسابي',
+    a_setupTitle: 'إنشاء حساب معلم المكتبة', a_setupSub: 'الحساب الأول هو حساب معلم المكتبة بصلاحيات المسؤول الكاملة. اختر اسم المستخدم وكلمة المرور بنفسك.',
+    a_setupKeyHint: 'مطلوبة لهذا الحساب الأول فقط. وهي قيمة ADMIN_SETUP_KEY في Vercel، وليست PROXY_SECRET.', a_setupShow: 'إظهار',
+    a_setupFirst: 'لم يُكمل معلم المكتبة الإعداد الأول بعد.', a_setupFirstLink: 'افتح تطبيق معلمي المكتبة',
+    a_setupKey: 'كلمة المرور السرية', a_setupBtn: 'إنشاء حسابي',
     a_pendingTitle: 'بانتظار الموافقة', a_pendingBody: 'تم إنشاء حسابك. يجب أن يوافق عليه مسؤول المكتبة قبل أن تتمكن من تسجيل الدخول. يرجى المحاولة لاحقًا.',
     a_suspendedTitle: 'الحساب موقوف', a_suspendedBody: 'تم إيقاف حسابك من قبل مسؤول المكتبة.',
     a_bannedTitle: 'الحساب محظور', a_bannedBody: 'تم حظر حسابك من قبل مسؤول المكتبة.',
@@ -91,7 +89,7 @@ export const AUTH_I18N = {
     err_EMAIL_TAKEN: 'يوجد حساب بهذا البريد الإلكتروني. سجّل الدخول بدلًا من ذلك أو استخدم «نسيت كلمة المرور؟».',
     err_WEAK_PASSWORD: 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل وتحتوي على حروف وأرقام.',
     err_INVALID_EMAIL: 'أدخل بريدًا إلكترونيًا صحيحًا.', err_REGISTRATION_CLOSED: 'التسجيل مغلق. اطلب من مسؤول المكتبة إنشاء حسابك.',
-    err_DOMAIN_NOT_ALLOWED: 'يرجى التسجيل باستخدام بريد المدرسة الإلكتروني.', err_BAD_SETUP_KEY: 'هذه ليست كلمة مرور الإعداد. انسخ ADMIN_SETUP_KEY من Vercel مرة أخرى.',
+    err_DOMAIN_NOT_ALLOWED: 'يرجى التسجيل باستخدام بريد المدرسة الإلكتروني.', err_BAD_SETUP_KEY: 'هذه ليست كلمة المرور السرية. انسخ ADMIN_SETUP_KEY من Vercel مرة أخرى.',
     err_SETUP_DISABLED: 'قيمة ADMIN_SETUP_KEY غير موجودة في Vercel. أضفها وأعد النشر ثم عد إلى هنا.',
     err_HOST_LOCKED: 'منصة Vercel تقفل هذا الموقع. أوقف ذلك من Vercel: Settings ثم Deployment Protection.', err_ALREADY_SET_UP: 'تم إعداد النظام مسبقًا. سجّل الدخول.',
     err_WRONG_PASSWORD: 'كلمة المرور الحالية غير صحيحة.', err_SAME_PASSWORD: 'اختر كلمة مرور مختلفة عن الحالية.',
@@ -111,7 +109,6 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
   let systemInfo = null;
   let current = { screen: 'login' };
   let infoError = null;
-  let setupKey = ''; // held in memory only, between the two setup steps
 
   function card(inner) {
     const school = (i18n.lang === 'ar' ? systemInfo?.schoolNameAr || systemInfo?.schoolName : systemInfo?.schoolName) || '';
@@ -156,11 +153,9 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
       <div class="auth-links">
         <a href="#" id="aForgot">${esc(t('a_forgot'))}</a>
         <span>${esc(t('a_noAccount'))} <a href="#" id="aRegister">${esc(t('a_create'))}</a></span>
-        ${showSetup ? `<a href="#" id="aSetup" class="strong">${esc(t('a_setupLink'))}</a>` : ''}
       </div>`);
     $('#aForgot', root).onclick = (e) => { e.preventDefault(); showForgot(); };
-    $('#aRegister', root).onclick = (e) => { e.preventDefault(); showRegister(); };
-    if (showSetup) $('#aSetup', root).onclick = (e) => { e.preventDefault(); showSetupForm(); };
+    $('#aRegister', root).onclick = (e) => { e.preventDefault(); showSetup ? showSetupForm() : showRegister(); };
     $('#aForm', root).onsubmit = async (e) => {
       e.preventDefault();
       const login = $('#aLogin', root).value.trim(), password = $('#aPass', root).value, remember = $('#aRemember', root).checked;
@@ -239,78 +234,48 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
     };
   }
 
-  // Step 1: the one-time box. It never appears again once the first account exists.
-  function showSetupKeyBox() {
+  // The first account: the normal fields plus one extra box for the secret password.
+  // Once this account exists the form is never shown again.
+  function showSetupForm() {
     current = { screen: 'setup' };
     const off = systemInfo && !systemInfo.setupEnabled;
     card(`
-      <p class="step-tag">${esc(t('a_setupStep1'))}</p>
-      <h1>${esc(t('a_setupBoxTitle'))}</h1>
-      <p class="sub">${esc(t('a_setupBoxSub'))}</p>
-      ${off ? notice(t('err_SETUP_DISABLED'), 'err') : ''}
-      <form id="aForm" novalidate>
-        <div class="fg"><label for="sKey">${esc(t('a_setupKey'))}</label><input id="sKey" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" /><small class="hint">${esc(t('a_setupKeyHint'))}</small></div>
-        <label class="check-row"><input type="checkbox" id="sShow" /> <span>${esc(t('a_setupShow'))}</span></label>
-        <p class="field-err" id="aErr"></p>
-        <button class="login-btn" id="aSubmit" type="submit">${esc(t('a_setupContinue'))}</button>
-      </form>
-      <div class="auth-links"><a href="#" id="aBack">${esc(t('a_backToSignIn'))}</a></div>`);
-    $('#sShow', root).onchange = (e) => { $('#sKey', root).type = e.target.checked ? 'text' : 'password'; };
-    $('#aBack', root).onclick = (e) => { e.preventDefault(); showLogin(); };
-    $('#sKey', root).focus();
-    $('#aForm', root).onsubmit = async (e) => {
-      e.preventDefault();
-      const value = $('#sKey', root).value.trim();
-      if (!value) return fieldErr(t('a_required'));
-      const btn = $('#aSubmit', root);
-      btn.disabled = true; fieldErr('');
-      try {
-        await api.call('system.checkSetupKey', { setupKey: value });
-        setupKey = value;
-        showSetupForm();
-      } catch (err) {
-        if (err.code === 'ALREADY_SET_UP') { systemInfo = { ...systemInfo, needsSetup: false }; return showLogin(errorText(err, i18n), 'info'); }
-        btn.disabled = false; fieldErr(errorText(err, i18n));
-      }
-    };
-  }
-
-  // Step 2: the first library teacher chooses a name, username and password.
-  function showSetupForm() {
-    if (!setupKey) return showSetupKeyBox();
-    current = { screen: 'setup' };
-    card(`
-      <p class="step-tag">${esc(t('a_setupStep2'))}</p>
       <h1>${esc(t('a_setupTitle'))}</h1>
       <p class="sub">${esc(t('a_setupSub'))}</p>
+      ${off ? notice(t('err_SETUP_DISABLED'), 'err') : ''}
       <form id="aForm" novalidate>
         <div class="fg"><label for="sName">${esc(t('a_name'))}</label><input id="sName" autocomplete="name" maxlength="80" /></div>
         <div class="fg"><label for="sUser">${esc(t('a_username'))}</label><input id="sUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="30" placeholder="${esc(t('a_usernamePh'))}" /><small class="hint">${esc(t('a_usernameHint'))}</small></div>
         <div class="fg"><label for="sEmail">${esc(t('a_emailOpt'))}</label><input id="sEmail" type="email" autocomplete="email" /></div>
         <div class="fg"><label for="sPass">${esc(t('a_password'))}</label><input id="sPass" type="password" autocomplete="new-password" /><small class="hint">${esc(t('a_passHint'))}</small></div>
         <div class="fg"><label for="sPass2">${esc(t('a_confirm'))}</label><input id="sPass2" type="password" autocomplete="new-password" /></div>
+        <div class="secret-box">
+          <div class="fg"><label for="sKey">${esc(t('a_setupKey'))}</label><input id="sKey" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" /><small class="hint">${esc(t('a_setupKeyHint'))}</small></div>
+          <label class="check-row"><input type="checkbox" id="sShow" /> <span>${esc(t('a_setupShow'))}</span></label>
+        </div>
         <p class="field-err" id="aErr"></p>
         <button class="login-btn" id="aSubmit" type="submit">${esc(t('a_setupBtn'))}</button>
       </form>
       <div class="auth-links"><a href="#" id="aBack">${esc(t('a_backToSignIn'))}</a></div>`);
-    $('#aBack', root).onclick = (e) => { e.preventDefault(); setupKey = ''; showLogin(); };
+    $('#sShow', root).onchange = (e) => { $('#sKey', root).type = e.target.checked ? 'text' : 'password'; };
+    $('#aBack', root).onclick = (e) => { e.preventDefault(); showLogin(); };
     $('#aForm', root).onsubmit = async (e) => {
       e.preventDefault();
-      const name = $('#sName', root).value.trim(), username = $('#sUser', root).value.trim(), email = $('#sEmail', root).value.trim(), password = $('#sPass', root).value;
-      if (!name || !username || !password) return fieldErr(t('a_required'));
+      const setupKey = $('#sKey', root).value.trim(), name = $('#sName', root).value.trim(), username = $('#sUser', root).value.trim(), email = $('#sEmail', root).value.trim(), password = $('#sPass', root).value;
+      if (!setupKey || !name || !username || !password) return fieldErr(t('a_required'));
       if (password !== $('#sPass2', root).value) return fieldErr(t('a_mismatch'));
       const btn = $('#aSubmit', root);
-      btn.disabled = true;
+      btn.disabled = true; fieldErr('');
       try {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const r = await api.call('system.setup', { setupKey, name, username, email, password, timeZone: tz });
-        setupKey = '';
         api.setSession(r.token, false);
         systemInfo = { ...systemInfo, needsSetup: false };
         route(r.me);
       } catch (err) {
-        if (err.code === 'BAD_SETUP_KEY') { setupKey = ''; return showSetupKeyBox(); }
+        if (err.code === 'ALREADY_SET_UP') { systemInfo = { ...systemInfo, needsSetup: false }; return showLogin(errorText(err, i18n), 'info'); }
         btn.disabled = false; fieldErr(errorText(err, i18n));
+        if (err.code === 'BAD_SETUP_KEY') $('#sKey', root).focus();
       }
     };
   }

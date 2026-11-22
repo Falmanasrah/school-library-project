@@ -1,7 +1,7 @@
 // Teachers App service worker: network first (always the newest version when
 // online), cached copy when offline. School data (/api/) is never cached, and the
 // other apps on this site (/library/, /supervisors/, /download/) are left alone.
-const VERSION = '2.1.0';
+const VERSION = '2.1.1';
 const PREFIX = 'slp-teachers-';
 const CACHE = PREFIX + VERSION;
 const SHELL = [

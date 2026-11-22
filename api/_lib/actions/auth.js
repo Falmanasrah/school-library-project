@@ -102,17 +102,6 @@ export default {
     }
   },
 
-  // Step 1 of first-time setup: the one-time box checks the setup password on its own.
-  'system.checkSetupKey': {
-    auth: 'public', apps: ['library'],
-    async handler(ctx, d) {
-      await rateLimit(ctx.db, { ip: ctx.ip, bucket: 'setup', limit: 30, windowMs: 3600_000, now: ctx.now });
-      if (await ctx.db.get('system', 'bootstrap')) throw conflict('ALREADY_SET_UP', 'The system has already been set up. Sign in instead.');
-      assertSetupKey(d.setupKey);
-      return { ok: true };
-    }
-  },
-
   'system.setup': {
     auth: 'public', apps: ['library'],
     async handler(ctx, d) {
