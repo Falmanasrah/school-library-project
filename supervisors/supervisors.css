@@ -35,6 +35,3 @@ nav.tabs { top: var(--hdr, 56px); }
 .date-bar { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px; }
 .date-bar .fg { margin: 0; }
 .date-bar .fg input { height: 40px; }
-/* dark mode: keep white text readable on filled brand-coloured surfaces */
-[data-theme="dark"] header.top, [data-theme="dark"] .login-btn, [data-theme="dark"] .send-btn, [data-theme="dark"] .btn.primary, [data-theme="dark"] .seg button.on,
-[data-theme="dark"] .sheet-btns .confirm:not(.danger), [data-theme="dark"] .install-bar button { background: #9a5d00; border-color: #9a5d00; }

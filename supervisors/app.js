@@ -138,7 +138,7 @@ function showSent(slip) {
       <div class="muted small">${esc(t(slip.library))} · ${esc(reasonText(slip))}</div>
       <div class="code big">${esc(slip.code)}</div>
       <div class="hint">${esc(t('sentHint'))}</div></div>
-    <div class="sheet-btns"><button class="cancel" type="button" id="sPrint">🖨 ${esc(t('printSlip'))}</button><button class="confirm" type="button" id="sNew">${esc(t('newSlip'))}</button></div>`);
+    <div class="sheet-btns"><button class="cancel" type="button" id="sPrint">${esc(t('printSlip'))}</button><button class="confirm" type="button" id="sNew">${esc(t('newSlip'))}</button></div>`);
   $('#sPrint', h.el).onclick = () => printHtml(slipHtml({ settings: S.d.settings, slips: [slip] }));
   $('#sNew', h.el).onclick = () => { h.close(); setTimeout(() => $('#sName')?.focus(), 250); };
 }
@@ -167,7 +167,7 @@ const MineView = {
         <div class="meta">${esc(t(s.library))} · ${esc(reasonText(s))} · ${esc(t('teacherName'))}: ${esc(s.teacherName)}${s.studentId ? ` · ${esc(s.studentId)}` : ''}<br>${esc(t('issued', s.issuedTime))}</div>
         <div class="state">${esc(stateText(s))}</div></div>
         <div class="side">${badge(st)}<span class="code">${esc(s.code)}</span>
-          <div class="btn-row">${['sent', 'received'].includes(st) ? `<button class="btn sm danger" type="button" data-act="cancel" data-id="${esc(s.id)}">${esc(t('cancelSlip'))}</button>` : ''}<button class="btn sm" type="button" data-act="print" data-id="${esc(s.id)}">🖨</button></div></div></div>`;
+          <div class="btn-row">${['sent', 'received'].includes(st) ? `<button class="btn sm danger" type="button" data-act="cancel" data-id="${esc(s.id)}">${esc(t('cancelSlip'))}</button>` : ''}<button class="btn sm" type="button" data-act="print" data-id="${esc(s.id)}">${esc(t('printSlip'))}</button></div></div></div>`;
     }).join('')}</div>` : `<div class="empty">${esc(t('noSlips'))}</div>`;
   },
   async onClick(e) {

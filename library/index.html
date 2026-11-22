@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-app="library">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Library Teachers</title>
 <meta name="description" content="Library Teachers App: visits list, visitors log, booking approval, permission slips and administration for the school library." />
-<meta name="theme-color" content="#1f7a5a" />
+<meta name="theme-color" content="#12573d" />
 <meta name="referrer" content="strict-origin-when-cross-origin" />
 <link rel="manifest" href="/library/manifest.json" />
 <link rel="icon" href="/library/icons/icon-192.png" />
@@ -13,12 +13,13 @@
 <link rel="stylesheet" href="/shared/base.css" />
 <link rel="stylesheet" href="/shared/auth.css" />
 <link rel="stylesheet" href="/library/library.css" />
+<link rel="stylesheet" href="/shared/theme.css" />
 </head>
 <body>
 
 <div class="util-bar">
   <button class="util-btn" id="langToggle" type="button">EN / ع</button>
-  <button class="util-btn" id="themeToggle" type="button">🌙</button>
+  <button class="util-btn" id="themeToggle" type="button" aria-label="Light or dark">◐</button>
 </div>
 
 <div id="loginView" class="login-wrap"></div>
@@ -37,7 +38,7 @@
       <div class="header-btns">
         <select id="libFilter" class="lib-filter" aria-label="Library"></select>
         <div class="sync-pill"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">Live</span></div>
-        <button class="icon-btn" id="passwordBtn" type="button" title="Username and password" aria-label="Username and password">🔑</button>
+        <button class="icon-btn" id="passwordBtn" type="button" title="Username and password" aria-label="Username and password"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></button>
         <button class="icon-btn" id="logoutBtn" type="button" data-i="signOut">Sign out</button>
       </div>
     </div>

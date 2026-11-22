@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-app="teachers">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
 <title>Library Booking — Teachers</title>
 <meta name="description" content="Book library periods for your classes. Teachers App of the school library system." />
 <meta name="referrer" content="strict-origin-when-cross-origin" />
-<meta name="theme-color" content="#0f5d8a" />
+<meta name="theme-color" content="#114b7a" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icons/icon-192.png" />
 <link rel="apple-touch-icon" href="icons/icon-192.png" />
@@ -237,12 +237,13 @@
   .ios-steps { background: var(--page); border-radius: 12px; padding: 14px 16px; font-size: 13px; color: var(--ink); line-height: 1.6; margin-bottom: 16px; }
   .ios-steps b { color: var(--brand); }
 </style>
+<link rel="stylesheet" href="/shared/theme.css" />
 </head>
 <body>
 
 <div class="util-bar">
   <button class="util-btn" id="langToggle">EN / ع</button>
-  <button class="util-btn" id="themeToggle">🌙</button>
+  <button class="util-btn" id="themeToggle" aria-label="Light or dark">◐</button>
 </div>
 
 <!-- ================= LOGIN VIEW ================= -->
@@ -264,7 +265,7 @@
       </div>
       <div class="header-btns">
         <div class="sync-pill"><div class="sync-dot" id="syncDot"></div><span id="syncLabel" data-i="synced">Synced</span></div>
-        <button class="icon-btn key" id="passwordBtn" title="Username and password" aria-label="Username and password">🔑</button>
+        <button class="icon-btn key" id="passwordBtn" title="Username and password" aria-label="Username and password"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></button>
         <button class="icon-btn" id="logoutBtn" data-i="signOut">Sign out</button>
       </div>
     </div>

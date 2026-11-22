@@ -1,12 +1,12 @@
 // Floor Supervisors App service worker: network first (always the newest version
 // when online), cached copy when offline. School data (/api/) is never cached.
-const VERSION = '2.0.0';
+const VERSION = '2.1.0';
 const PREFIX = 'slp-supervisors-';
 const CACHE = PREFIX + VERSION;
 const SHELL = [
   '/supervisors/', '/supervisors/app.js', '/supervisors/supervisors.css', '/supervisors/manifest.json',
   '/supervisors/icons/icon-192.png', '/supervisors/icons/icon-512.png',
-  '/shared/core.js', '/shared/auth.js', '/shared/forms.js', '/shared/base.css', '/shared/auth.css'
+  '/shared/core.js', '/shared/auth.js', '/shared/forms.js', '/shared/base.css', '/shared/auth.css', '/shared/theme.css', '/shared/chooser.js'
 ];
 
 self.addEventListener('install', (e) => {

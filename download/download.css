@@ -1,8 +1,6 @@
 /* Public download page: neutral slate brand; each app card uses its own app colour. */
 :root { --brand: #33415c; --brand-dark: #263147; --brand-light: #e8ecf3; }
 [data-theme="dark"] { --brand: #a9badb; --brand-dark: #8396bd; --brand-light: #1e2738; }
-[data-theme="dark"] .btn.primary, [data-theme="dark"] .seg button.on,
-[data-theme="dark"] .sheet-btns .confirm:not(.danger) { background: #3d4f75; border-color: #3d4f75; color: #fff; }
 
 .dl-page { max-width: 1040px; margin: 0 auto; padding: 4px 16px 24px; }
 .dl-noscript { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; line-height: 1.6; }

@@ -112,7 +112,7 @@ const VisitsView = {
     }).join('');
     this.el.innerHTML = `
       <div class="page-head"><div><h2>${esc(t('visitsTitle'))}</h2><p>${esc(t('visitsSub'))}</p></div>
-        <div class="btn-row"><div class="seg">${seg}</div><button class="btn" type="button" data-act="print">🖨 ${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div></div>
+        <div class="btn-row"><div class="seg">${seg}</div><button class="btn" type="button" data-act="print">${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div></div>
       ${inLib.length ? `<div class="section-title"><h3>${esc(t('inLibraryNow'))}</h3><span class="n">${inLib.length}</span></div>
         <div class="list">${inLib.map(v => `<div class="item highlight"><div class="main"><div class="title">${esc(v.gradeSection)} · ${esc(v.teacherName)}</div>
           <div class="meta">${esc(t('arrived'))} ${esc(v.arrivedAt || '—')} · ${esc(v.students)} ${esc(t('studentsShort'))}${libCol() ? ' · ' + esc(libShort(v.library)) : ''}${v.source === 'walkin' ? ` · <span class="chip">${esc(t('src_walkin'))}</span>` : ''}</div></div>
@@ -292,7 +292,7 @@ const SlipsView = {
       <div class="who">${esc(s.studentName)} <span class="muted" style="font-weight:500;font-size:14px">· ${esc(s.grade)}</span> ${badge(s.status)}</div>
       <div class="det"><b>${esc(t('teacher'))}:</b> ${esc(s.teacherName)} · <b>${esc(t('reason'))}:</b> ${esc(reasonText(s))}${s.studentId ? ` · <b>${esc(t('studentId'))}:</b> ${esc(s.studentId)}` : ''}${libCol() ? ` · <b>${esc(libShort(s.library))}</b>` : ''}<br>
       ${esc(t('issuedBy', s.supervisorName, s.issuedTime))}${s.entranceTime ? ` · <b>${esc(t('entrance'))}:</b> ${esc(s.entranceTime)}` : ''}${s.notes ? `<br>${esc(t('notes'))}: ${esc(s.notes)}` : ''}</div></div>
-      <div class="actions">${btns}<button class="btn sm" type="button" data-act="sprint" data-id="${esc(s.id)}">🖨 ${esc(t('printSlip'))}</button></div></div>`;
+      <div class="actions">${btns}<button class="btn sm" type="button" data-act="sprint" data-id="${esc(s.id)}">${esc(t('printSlip'))}</button></div></div>`;
   },
   table(list) {
     return `<div class="table-wrap"><table class="data"><thead><tr><th>${esc(t('date'))}</th><th>${esc(t('name'))}</th><th>${esc(t('grade'))}</th><th>${esc(t('teacher'))}</th><th>${esc(t('reason'))}</th><th>${esc(t('supervisor'))}</th><th>${esc(t('entrance'))}–${esc(t('exit'))}</th><th>${esc(t('status'))}</th></tr></thead><tbody>
@@ -305,7 +305,7 @@ const SlipsView = {
     box.innerHTML = `<div class="toolbar">${toolbarDates(this.q)}
         <div class="fg"><label for="qStatus">${esc(t('status'))}</label><select id="qStatus">${st.map(s => `<option value="${s}"${this.q.status === s ? ' selected' : ''}>${esc(s === 'all' ? t('all') : t('st_' + s))}</option>`).join('')}</select></div>
         <div class="fg grow"><label for="qText">${esc(t('search'))}</label><input id="qText" value="${esc(this.q.text)}" placeholder="${esc(t('searchPh'))}" /></div>
-        <button class="btn primary" type="button" data-act="search">${esc(t('search'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button><button class="btn" type="button" data-act="printall">🖨 ${esc(t('print'))}</button></div>
+        <button class="btn primary" type="button" data-act="search">${esc(t('search'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button><button class="btn" type="button" data-act="printall">${esc(t('print'))}</button></div>
       <div id="histRes">${this.items ? this.histResults() : emptyHtml(t('loading'))}</div>`;
   },
   histResults() { return this.items.length ? this.table(this.items) : emptyHtml(t('nothingFound')); },
@@ -364,7 +364,7 @@ const SlipsView = {
   print(slips) { printHtml(slipHtml({ settings: S.d.settings, slips })); },
   detail(s) {
     const shown = slipShownStatus(s);
-    const buttons = [{ id: 'print', label: '🖨 ' + t('printSlip'), onClick: () => this.print([s]) }];
+    const buttons = [{ id: 'print', label: '' + t('printSlip'), onClick: () => this.print([s]) }];
     if (['sent', 'received'].includes(shown)) buttons.unshift({ id: 'verify', label: t('studentArrived'), cls: 'primary', onClick: (h) => { h.close(); this.verify(s); } });
     if (shown === 'used' && !s.exitTime) buttons.unshift({ id: 'exit', label: t('recordExit'), cls: 'primary', onClick: (h) => { h.close(); this.exit(s); } });
     if (isAdmin()) {
@@ -435,7 +435,7 @@ const LogView = {
       <div class="toolbar">${toolbarDates(this.q)}
         <div class="fg grow"><label for="qText">${esc(t('search'))}</label><input id="qText" value="${esc(this.q.text)}" placeholder="${esc(t('searchPh'))}" /></div>
         <button class="btn primary" type="button" data-act="search">${esc(t('search'))}</button>
-        <button class="btn" type="button" data-act="print">🖨 ${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div>
+        <button class="btn" type="button" data-act="print">${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div>
       <div id="logRes">${emptyHtml(t('loading'))}</div>`;
     this.search(true);
   },
@@ -521,7 +521,7 @@ const VisitorsView = {
       <div class="toolbar">${toolbarDates(this.q)}
         <div class="fg grow"><label for="qText">${esc(t('search'))}</label><input id="qText" value="${esc(this.q.text)}" placeholder="${esc(t('searchPh'))}" /></div>
         <button class="btn primary" type="button" data-act="search">${esc(t('search'))}</button>
-        <button class="btn" type="button" data-act="print">🖨 ${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div>
+        <button class="btn" type="button" data-act="print">${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div>
       <div id="visRes">${emptyHtml(t('loading'))}</div>`;
     this.search(true);
   },
@@ -544,7 +544,7 @@ const VisitorsView = {
     box.innerHTML = [...days.entries()].map(([date, list]) => `
       <div class="day-head"><b>${esc(dLong(date))}</b><b>${esc(t('totalN', list.length))}</b></div>
       <div class="table-wrap"><table class="data"><thead><tr><th style="width:50px">${esc(t('no'))}</th><th>${esc(t('name'))}</th><th>${esc(t('className'))}</th><th>${esc(t('purpose'))}</th>${libCol() ? `<th>${esc(t('library'))}</th>` : ''}<th>${esc(t('entrance'))}</th><th>${esc(t('exit'))}</th><th></th></tr></thead><tbody>
-      ${list.map((v, i) => `<tr><td>${i + 1}</td><td><b>${esc(v.name)}</b>${v.source === 'slip' ? `<span class="sub">📝 ${esc(t('src_slip'))} · ${esc(v.supervisorName)}</span>` : ''}</td><td>${esc(v.className)}</td><td>${esc(v.purpose)}${v.notes ? `<span class="sub">${esc(v.notes)}</span>` : ''}</td>${libCol() ? `<td>${esc(libShort(v.library))}</td>` : ''}
+      ${list.map((v, i) => `<tr><td>${i + 1}</td><td><b>${esc(v.name)}</b>${v.source === 'slip' ? `<span class="sub">${esc(t('src_slip'))} · ${esc(v.supervisorName)}</span>` : ''}</td><td>${esc(v.className)}</td><td>${esc(v.purpose)}${v.notes ? `<span class="sub">${esc(v.notes)}</span>` : ''}</td>${libCol() ? `<td>${esc(libShort(v.library))}</td>` : ''}
         <td>${esc(v.entranceTime || '—')}</td><td>${v.exitTime ? esc(v.exitTime) : (date === S.today ? `<button class="btn primary sm" type="button" data-act="exit" data-id="${esc(v.id)}">${esc(t('recordExit'))}</button>` : '—')}</td>
         <td class="actions"><div class="btn-row" style="justify-content:flex-end"><button class="btn sm" type="button" data-act="edit" data-id="${esc(v.id)}">${esc(t('edit'))}</button>${isAdmin() ? `<button class="btn danger sm" type="button" data-act="del" data-id="${esc(v.id)}">${esc(t('delete'))}</button>` : ''}</div></td></tr>`).join('')}
       </tbody></table></div>`).join('');

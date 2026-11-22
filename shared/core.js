@@ -1,6 +1,6 @@
 // Shared client library for the three school library apps.
 // Each app imports this module but keeps its own session, interface and navigation.
-export const VERSION = '2.0.0';
+export const VERSION = '2.1.0';
 
 /* ---------------- text & html ---------------- */
 export function esc(v) {
@@ -113,7 +113,7 @@ export function createApi(appKey, { onSessionEnded } = {}) {
       let body = null;
       try { body = await res.json(); } catch { /* not json */ }
       if (body?.serverTime) offset = body.serverTime - Date.now();
-      if (!body) throw new ApiError(res.status >= 500 ? 'UNAVAILABLE' : 'NETWORK', 'The server is not responding correctly.', null, res.status);
+      if (!body) throw new ApiError(res.status === 401 || res.status === 403 ? 'HOST_LOCKED' : res.status >= 500 ? 'UNAVAILABLE' : 'NETWORK', 'The server is not responding correctly.', null, res.status);
       if (!body.ok) {
         const err = new ApiError(body.error?.code || 'ERROR', body.error?.message || 'Error', body.error?.details, res.status);
         if (token && SESSION_ENDERS.has(err.code)) {
@@ -259,7 +259,7 @@ export async function busy(btn, fn, i18n) {
 /* ---------------- theme ---------------- */
 export function initTheme(btn) {
   let theme = store.get('themePref') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  const apply = () => { document.documentElement.setAttribute('data-theme', theme); if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙'; store.set('themePref', theme); };
+  const apply = () => { document.documentElement.setAttribute('data-theme', theme); if (btn) btn.textContent = '◐'; store.set('themePref', theme); };
   apply();
   btn?.addEventListener('click', () => { theme = theme === 'dark' ? 'light' : 'dark'; apply(); });
 }

@@ -113,7 +113,7 @@ const Accounts = {
     box.innerHTML = rows.length ? `<div class="table-wrap"><table class="data"><thead><tr><th>${esc(t('name'))}</th><th>${esc(t('roles'))}</th><th>${esc(t('status'))}</th><th>${esc(t('lastSignIn'))}</th><th>${esc(t('created'))}</th><th></th></tr></thead><tbody>
       ${rows.map(u => `<tr class="clickable" data-act="manage" data-uid="${esc(u.id)}"><td><b>${esc(u.name)}</b>${u.id === S.me.id ? ` <span class="muted">${esc(t('you'))}</span>` : ''}<span class="sub">${esc(who(u))}</span></td>
         <td>${roleChips(u.roles)}${u.requestedRoles.length ? `<span class="sub">${esc(t('requested'))}: ${esc(u.requestedRoles.map(r => t('role_' + r)).join(', '))}</span>` : ''}</td>
-        <td>${badge(u.status)}${locked(u) ? ` <span class="status-badge st-rejected">🔒 ${esc(t('locked'))}</span>` : ''}${u.resetRequestedAt ? ` <span class="status-badge st-pending">${esc(t('resetReq'))}</span>` : ''}${u.statusReason ? `<span class="sub">${esc(u.statusReason)}</span>` : ''}</td>
+        <td>${badge(u.status)}${locked(u) ? ` <span class="status-badge st-rejected">${esc(t('locked'))}</span>` : ''}${u.resetRequestedAt ? ` <span class="status-badge st-pending">${esc(t('resetReq'))}</span>` : ''}${u.statusReason ? `<span class="sub">${esc(u.statusReason)}</span>` : ''}</td>
         <td class="small">${u.lastLoginAt ? `${esc(dt(u.lastLoginAt))}<span class="sub">${esc(t('app_' + (u.lastLoginApp || 'library')))}</span>` : esc(t('never'))}</td><td class="small">${esc(dt(u.createdAt))}</td>
         <td class="actions"><button class="btn sm" type="button" data-act="manage" data-uid="${esc(u.id)}">${esc(t('manage'))}</button></td></tr>`).join('')}</tbody></table></div>` : emptyHtml(t('nothingFound'));
   },
@@ -190,12 +190,12 @@ async function manageAccount(uid) {
 
       <div class="section-label">${esc(t('sec_status'))}</div>
       <div class="acct-actions">
-        ${u.status === 'active' && !self() ? `<button class="btn" type="button" data-m="suspend">⏸ ${esc(t('suspend'))}</button><button class="btn danger" type="button" data-m="ban">⛔ ${esc(t('ban'))}</button>` : ''}
+        ${u.status === 'active' && !self() ? `<button class="btn" type="button" data-m="suspend">⏸ ${esc(t('suspend'))}</button><button class="btn danger" type="button" data-m="ban">${esc(t('ban'))}</button>` : ''}
         ${restricted ? `<button class="btn good" type="button" data-m="reactivate">▶ ${esc(t('reactivate'))}</button>` : ''}
-        ${u.status === 'suspended' && !self() ? `<button class="btn danger" type="button" data-m="ban">⛔ ${esc(t('ban'))}</button>` : ''}
+        ${u.status === 'suspended' && !self() ? `<button class="btn danger" type="button" data-m="ban">${esc(t('ban'))}</button>` : ''}
         <button class="btn" type="button" data-m="revoke">${esc(t('signOutAll'))}</button>
       </div>
-      ${!self() ? `<div class="section-label">${esc(t('sec_danger'))}</div><button class="btn danger" type="button" data-m="delete">🗑 ${esc(t('deleteAccount'))}</button>` : ''}
+      ${!self() ? `<div class="section-label">${esc(t('sec_danger'))}</div><button class="btn danger" type="button" data-m="delete">${esc(t('deleteAccount'))}</button>` : ''}
       <p class="field-err" id="mErr"></p>
       <div class="sheet-btns" style="margin-top:18px"><button class="cancel" type="button" data-m="close">${esc(t('close'))}</button></div>`;
   };

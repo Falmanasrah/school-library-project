@@ -1,12 +1,12 @@
 // Teachers App service worker: network first (always the newest version when
 // online), cached copy when offline. School data (/api/) is never cached, and the
 // other apps on this site (/library/, /supervisors/, /download/) are left alone.
-const VERSION = '2.0.0';
+const VERSION = '2.1.0';
 const PREFIX = 'slp-teachers-';
 const CACHE = PREFIX + VERSION;
 const SHELL = [
   '/', '/index.html', '/teachers-app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png',
-  '/shared/core.js', '/shared/auth.js', '/shared/auth.css'
+  '/shared/core.js', '/shared/auth.js', '/shared/auth.css', '/shared/theme.css', '/shared/chooser.js'
 ];
 const OTHER_APPS = ['/library/', '/supervisors/', '/download/', '/api/'];
 

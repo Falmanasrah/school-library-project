@@ -238,7 +238,7 @@ class App {
 
   applyTheme() {
     document.documentElement.setAttribute('data-theme', this.theme);
-    document.getElementById('themeToggle').textContent = this.theme === 'dark' ? '☀️' : '🌙';
+    document.getElementById('themeToggle').textContent = '◐';
     store.set('themePref', this.theme);
   }
 
@@ -294,9 +294,9 @@ class App {
         <h2>${this.t('installTitle')}</h2>
         <p class="sub">${this.t('installBodyT')}</p>
         <div class="install-icons">
-          <div class="install-icon-item"><div class="circle">💻</div>${this.t('installIconPc')}</div>
-          <div class="install-icon-item"><div class="circle">🤖</div>${this.t('installIconAndroid')}</div>
-          <div class="install-icon-item"><div class="circle">📱</div>${this.t('installIconIos')}</div>
+          <div class="install-icon-item">${this.t('installIconPc')}</div>
+          <div class="install-icon-item">${this.t('installIconAndroid')}</div>
+          <div class="install-icon-item">${this.t('installIconIos')}</div>
         </div>
         <div class="sheet-btns">
           <button class="cancel" id="installNotNow">${this.t('notNow')}</button>

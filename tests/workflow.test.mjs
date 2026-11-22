@@ -59,6 +59,9 @@ test('full school library workflow', async (t) => {
     const info = await ok('library', 'system.info');
     assert.equal(info.needsSetup, true);
     assert.equal(info.setupEnabled, true);
+    await fail('BAD_SETUP_KEY', 'library', 'system.checkSetupKey', { setupKey: 'wrong' });
+    await fail('WRONG_APP', 'teachers', 'system.checkSetupKey', { setupKey: 'test-setup-key-123' });
+    assert.equal((await ok('library', 'system.checkSetupKey', { setupKey: '  test-setup-key-123\n' })).ok, true, 'spaces from copying do not matter');
     await fail('BAD_SETUP_KEY', 'library', 'system.setup', { setupKey: 'wrong', name: 'Head Librarian', username: 'admin', email: 'admin@school.test', password: 'Admin-pass-1' });
     await fail('WRONG_APP', 'teachers', 'system.setup', { setupKey: 'test-setup-key-123', name: 'X', username: 'x', email: 'x@school.test', password: 'Admin-pass-1' });
     const r = await ok('library', 'system.setup', { setupKey: 'test-setup-key-123', name: 'Head Librarian', username: 'admin', email: 'admin@school.test', password: 'Admin-pass-1', timeZone: TZ });
@@ -67,6 +70,7 @@ test('full school library workflow', async (t) => {
     S.admin = r.token;
     await fail('ALREADY_SET_UP', 'library', 'system.setup', { setupKey: 'test-setup-key-123', name: 'Other', username: 'other', email: 'other@school.test', password: 'Admin-pass-1' });
     assert.equal((await ok('library', 'system.info')).needsSetup, false);
+    await fail('ALREADY_SET_UP', 'library', 'system.checkSetupKey', { setupKey: 'test-setup-key-123' });
   });
 
   await t.test('teacher registers, waits for approval, admin approves', async () => {

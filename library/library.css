@@ -53,6 +53,3 @@ pre.details { background: var(--page); border-radius: 10px; padding: 10px; font-
 .countdown { font-weight: 700; }
 nav.tabs { top: var(--hdr, 56px); }
 table.data td.actions .btn-row { flex-wrap: nowrap; }
-/* dark mode: keep white text readable on filled brand-coloured surfaces */
-[data-theme="dark"] header.top, [data-theme="dark"] .login-btn, [data-theme="dark"] .btn.primary, [data-theme="dark"] .seg button.on,
-[data-theme="dark"] .sheet-btns .confirm:not(.danger), [data-theme="dark"] .install-bar button { background: #1f7a5a; border-color: #1f7a5a; }

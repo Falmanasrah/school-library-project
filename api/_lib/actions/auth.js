@@ -31,6 +31,14 @@ function schoolInfo(settings) {
   return { schoolName: settings.schoolName, schoolNameAr: settings.schoolNameAr, timeZone: settings.timeZone };
 }
 
+// Spaces or a line break picked up while copying must not make the setup password fail.
+function assertSetupKey(given) {
+  const envKey = String(process.env.ADMIN_SETUP_KEY || '').trim();
+  if (!envKey) throw new ApiError(503, 'SETUP_DISABLED', 'First-time setup is disabled. Set ADMIN_SETUP_KEY on the server.');
+  const key = typeof given === 'string' ? given.trim() : '';
+  if (!crypto.timingSafeEqual(Buffer.from(sha256(key)), Buffer.from(sha256(envKey)))) throw new ApiError(403, 'BAD_SETUP_KEY', 'The setup key is not correct.');
+}
+
 const USERNAME_TAKEN = () => conflict('USERNAME_TAKEN', 'This username is already taken. Choose another one.');
 const EMAIL_TAKEN = () => conflict('EMAIL_TAKEN', 'An account with this email already exists.');
 
@@ -94,14 +102,22 @@ export default {
     }
   },
 
+  // Step 1 of first-time setup: the one-time box checks the setup password on its own.
+  'system.checkSetupKey': {
+    auth: 'public', apps: ['library'],
+    async handler(ctx, d) {
+      await rateLimit(ctx.db, { ip: ctx.ip, bucket: 'setup', limit: 30, windowMs: 3600_000, now: ctx.now });
+      if (await ctx.db.get('system', 'bootstrap')) throw conflict('ALREADY_SET_UP', 'The system has already been set up. Sign in instead.');
+      assertSetupKey(d.setupKey);
+      return { ok: true };
+    }
+  },
+
   'system.setup': {
     auth: 'public', apps: ['library'],
     async handler(ctx, d) {
-      await rateLimit(ctx.db, { ip: ctx.ip, bucket: 'setup', limit: 10, windowMs: 3600_000, now: ctx.now });
-      const envKey = process.env.ADMIN_SETUP_KEY;
-      if (!envKey) throw new ApiError(503, 'SETUP_DISABLED', 'First-time setup is disabled. Set ADMIN_SETUP_KEY on the server.');
-      const given = typeof d.setupKey === 'string' ? d.setupKey : '';
-      if (!crypto.timingSafeEqual(Buffer.from(sha256(given)), Buffer.from(sha256(envKey)))) throw new ApiError(403, 'BAD_SETUP_KEY', 'The setup key is not correct.');
+      await rateLimit(ctx.db, { ip: ctx.ip, bucket: 'setup', limit: 30, windowMs: 3600_000, now: ctx.now });
+      assertSetupKey(d.setupKey);
       const name = str(d.name, 'Name', { min: 2, max: 80 });
       const username = vUsername(d.username);
       const email = optionalEmail(d.email);

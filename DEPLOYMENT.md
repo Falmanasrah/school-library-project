@@ -43,10 +43,12 @@ Without `FIREBASE_SERVICE_ACCOUNT` the server refuses to run in production. It n
 ### 1.3 First library teacher (full administrator)
 
 1. Open `https://YOUR-SITE/library/`.
-2. Click **First-time setup (library teacher)**.
-3. Enter the `ADMIN_SETUP_KEY`, then **her own** name, username and password (email is optional).
+2. A one-time box asks for the **setup password**. Paste the `ADMIN_SETUP_KEY` value (not `PROXY_SECRET`).
+3. Enter **her own** name, username and password (email is optional).
 
-Setup works only once. After that the form refuses ("already set up"). You can then remove `ADMIN_SETUP_KEY` from Vercel, or keep it secret.
+Setup works only once. After that the box never appears again. You can then remove `ADMIN_SETUP_KEY` from Vercel, or keep it secret.
+
+**If you see "Protected Deployment" or a Vercel login page:** that is Vercel's own lock, in front of the app. In **Vercel → your project → Settings → Deployment Protection**, turn off **Vercel Authentication** and **Password Protection**, then **Save**.
 
 ### 1.4 Check that everything works
 

@@ -25,14 +25,19 @@ const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt
 function css() {
   const s = document.createElement('style');
   s.textContent = `
-  .ac-overlay{position:fixed;inset:0;z-index:400;background:rgba(10,20,30,.55);display:flex;align-items:center;justify-content:center;padding:16px}
-  .ac-box{background:var(--surface,#fff);color:var(--ink,#14202b);width:100%;max-width:520px;border-radius:20px;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.3);max-height:92vh;overflow:auto}
-  .ac-box h2{margin:0 0 4px;font-size:20px}.ac-box p.ac-sub{margin:0 0 16px;font-size:13.5px;color:var(--ink-soft,#5b6b78);line-height:1.5}
-  .ac-app{display:flex;gap:12px;align-items:center;width:100%;text-align:start;padding:12px;margin-bottom:10px;border-radius:14px;border:1.5px solid var(--line-strong,#ccd6de);background:var(--page,#f4f7f9);color:inherit;cursor:pointer;font:inherit;text-decoration:none}
-  .ac-app:hover{border-color:var(--c)}.ac-app.ac-on{border-color:var(--c);box-shadow:0 0 0 2px var(--c) inset}
-  .ac-app img{width:46px;height:46px;border-radius:12px;flex-shrink:0}.ac-app b{display:block;font-size:15.5px}.ac-app span{font-size:12.5px;color:var(--ink-soft,#5b6b78)}
-  .ac-app em{font-style:normal;font-size:11px;font-weight:700;color:var(--c);margin-inline-start:auto;white-space:nowrap}
-  .ac-foot{text-align:center;font-size:13px;margin-top:6px}.ac-foot a{color:var(--brand,#0f5d8a)}`;
+  .ac-overlay{position:fixed;inset:0;z-index:400;background:rgba(8,9,10,.66);display:flex;align-items:center;justify-content:center;padding:16px}
+  .ac-box{background:var(--surface,#fff);color:var(--ink,#121315);width:100%;max-width:560px;border:2px solid var(--ink,#121315);padding:24px;max-height:92vh;overflow:auto}
+  .ac-box h2{margin:0 0 4px;font-family:var(--font-head,Arial);font-size:28px;line-height:1.1}
+  .ac-box p.ac-sub{margin:0 0 16px;font-size:14px;color:var(--ink-soft,#484b50);line-height:1.5}
+  .ac-app{display:flex;gap:14px;align-items:center;width:100%;text-align:start;padding:12px;margin-top:-1px;border:1px solid var(--ink,#121315);background:var(--surface,#fff);color:inherit;cursor:pointer;font:inherit;text-decoration:none;position:relative}
+  .ac-app:hover{background:var(--page,#ececea)}
+  .ac-app.ac-on{outline:2px solid var(--c);outline-offset:-2px}
+  .ac-app img{width:44px;height:44px;flex-shrink:0}
+  .ac-app b{display:block;font-family:var(--font-head,Arial);font-size:18px;line-height:1.2}
+  .ac-app span{display:block;font-size:13px;color:var(--ink-soft,#484b50);margin-top:2px}
+  .ac-app em{font-style:normal;font-size:12px;font-weight:700;margin-inline-start:auto;white-space:nowrap}
+  .ac-foot{font-size:13.5px;margin-top:14px}
+  .ac-foot a{color:var(--ink,#121315);font-weight:600}`;
   document.head.appendChild(s);
 }
 
@@ -71,10 +76,10 @@ if (!installed()) {
     b.type = 'button';
     b.className = 'util-btn';
     b.id = 'appChooserBtn';
-    b.textContent = '⇄ ' + TXT[document.documentElement.lang === 'ar' ? 'ar' : 'en'].btn;
+    b.textContent = TXT[document.documentElement.lang === 'ar' ? 'ar' : 'en'].btn;
     b.addEventListener('click', () => open(false));
     bar.prepend(b);
-    new MutationObserver(() => { b.textContent = '⇄ ' + TXT[document.documentElement.lang === 'ar' ? 'ar' : 'en'].btn; })
+    new MutationObserver(() => { b.textContent = TXT[document.documentElement.lang === 'ar' ? 'ar' : 'en'].btn; })
       .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   }
   // First visit to the website: ask which app to use. Remembered after that.
