@@ -9,7 +9,7 @@ export const AUTH_I18N = {
     a_login: 'Username or email', a_username: 'Username', a_usernamePh: 'e.g. sarah.ahmad', a_emailOpt: 'Email (optional)',
     a_usernameHint: 'Choose your own: 3 to 30 English letters or numbers. Dots, dashes and underscores are allowed, no spaces.',
     a_accountTitle: 'Username and password', a_newOptional: 'New password (leave empty to keep your current one)', a_saved: 'Saved',
-    a_emailPh: 'name@school.edu', a_namePh: 'e.g. Sarah Ahmad', a_passHint: 'At least 8 characters, with letters and numbers.',
+    a_emailPh: 'name@school.edu', a_namePh: 'e.g. Sarah Ahmad', a_passHint: 'At least 6 characters.',
     a_remember: 'Keep me signed in on this device', a_rememberHint: 'Leave unticked on shared computers.',
     a_signIn: 'Sign in', a_signingIn: 'Signing in…', a_forgot: 'Forgot password?', a_noAccount: 'New here?', a_create: 'Create an account',
     a_haveAccount: 'Already have an account?', a_backToSignIn: 'Back to sign in', a_register: 'Create account', a_registering: 'Creating…',
@@ -25,7 +25,7 @@ export const AUTH_I18N = {
     a_suspendedTitle: 'Account suspended', a_suspendedBody: 'Your account has been suspended by the library administrator.',
     a_bannedTitle: 'Account blocked', a_bannedBody: 'Your account has been blocked by the library administrator.',
     a_rejectedTitle: 'Registration not approved', a_rejectedBody: 'Your registration was not approved. Contact the library administrator if you think this is a mistake.',
-    a_reason: 'Reason', a_until: 'Until',
+    a_reason: 'Reason', a_until: 'Until', a_showPw: 'Show password', a_hidePw: 'Hide password',
     a_noAccessTitle: 'No access to this app', a_noAccessBody: (app) => `You are signed in, but your account does not have access to the ${app}.`,
     a_requestAccess: 'Request access', a_requestSent: 'Access requested. The administrator will review it.', a_requested: 'Access requested — waiting for the administrator.',
     a_changeTitle: 'Choose your username and password', a_changeSub: 'Before you continue, choose your own username and a new password. Only you will know them.',
@@ -41,7 +41,7 @@ export const AUTH_I18N = {
     err_ACCOUNT_SUSPENDED: 'This account is suspended.', err_ACCOUNT_BANNED: 'This account has been blocked.',
     err_ACCOUNT_REJECTED: 'This registration was not approved.', err_ACCOUNT_DELETED: 'This account no longer exists.',
     err_EMAIL_TAKEN: 'An account with this email already exists. Sign in instead, or use "Forgot password?".',
-    err_WEAK_PASSWORD: 'Password must be at least 8 characters and contain letters and numbers.',
+    err_WEAK_PASSWORD: 'The password must be at least 6 characters.',
     err_INVALID_EMAIL: 'Enter a valid email address.', err_REGISTRATION_CLOSED: 'Registration is closed. Ask the library administrator to create your account.',
     err_DOMAIN_NOT_ALLOWED: 'Please register with your school email address.', err_BAD_SETUP_KEY: 'That is not the secret password. Copy ADMIN_SETUP_KEY from Vercel again.',
     err_SETUP_DISABLED: 'ADMIN_SETUP_KEY is missing in Vercel. Add it, redeploy, then come back.',
@@ -55,7 +55,7 @@ export const AUTH_I18N = {
     a_login: 'اسم المستخدم أو البريد الإلكتروني', a_username: 'اسم المستخدم', a_usernamePh: 'مثال: sarah.ahmad', a_emailOpt: 'البريد الإلكتروني (اختياري)',
     a_usernameHint: 'اختره بنفسك: من 3 إلى 30 حرفًا إنجليزيًا أو رقمًا. يُسمح بالنقطة والشرطة والشرطة السفلية، دون مسافات.',
     a_accountTitle: 'اسم المستخدم وكلمة المرور', a_newOptional: 'كلمة مرور جديدة (اتركها فارغة للإبقاء على الحالية)', a_saved: 'تم الحفظ',
-    a_emailPh: 'name@school.edu', a_namePh: 'مثال: سارة أحمد', a_passHint: '8 أحرف على الأقل، تحتوي على حروف وأرقام.',
+    a_emailPh: 'name@school.edu', a_namePh: 'مثال: سارة أحمد', a_passHint: '6 خانات على الأقل.',
     a_remember: 'إبقائي مسجّلًا على هذا الجهاز', a_rememberHint: 'اتركه دون تحديد على الأجهزة المشتركة.',
     a_signIn: 'تسجيل الدخول', a_signingIn: 'جارٍ تسجيل الدخول…', a_forgot: 'نسيت كلمة المرور؟', a_noAccount: 'مستخدم جديد؟', a_create: 'إنشاء حساب',
     a_haveAccount: 'لديك حساب؟', a_backToSignIn: 'العودة لتسجيل الدخول', a_register: 'إنشاء الحساب', a_registering: 'جارٍ الإنشاء…',
@@ -71,7 +71,7 @@ export const AUTH_I18N = {
     a_suspendedTitle: 'الحساب موقوف', a_suspendedBody: 'تم إيقاف حسابك من قبل مسؤول المكتبة.',
     a_bannedTitle: 'الحساب محظور', a_bannedBody: 'تم حظر حسابك من قبل مسؤول المكتبة.',
     a_rejectedTitle: 'لم تتم الموافقة على التسجيل', a_rejectedBody: 'لم تتم الموافقة على تسجيلك. تواصل مع مسؤول المكتبة إذا كنت تعتقد أن هذا خطأ.',
-    a_reason: 'السبب', a_until: 'حتى',
+    a_reason: 'السبب', a_until: 'حتى', a_showPw: 'إظهار كلمة المرور', a_hidePw: 'إخفاء كلمة المرور',
     a_noAccessTitle: 'لا تملك صلاحية لهذا التطبيق', a_noAccessBody: (app) => `أنت مسجّل الدخول، لكن حسابك لا يملك صلاحية الوصول إلى ${app}.`,
     a_requestAccess: 'طلب صلاحية', a_requestSent: 'تم طلب الصلاحية. سيراجعها المسؤول.', a_requested: 'تم طلب الصلاحية — بانتظار المسؤول.',
     a_changeTitle: 'اختر اسم المستخدم وكلمة المرور', a_changeSub: 'قبل المتابعة، اختر اسم مستخدم خاصًا بك وكلمة مرور جديدة. لن يعرفهما غيرك.',
@@ -87,7 +87,7 @@ export const AUTH_I18N = {
     err_ACCOUNT_SUSPENDED: 'هذا الحساب موقوف.', err_ACCOUNT_BANNED: 'هذا الحساب محظور.',
     err_ACCOUNT_REJECTED: 'لم تتم الموافقة على هذا التسجيل.', err_ACCOUNT_DELETED: 'هذا الحساب لم يعد موجودًا.',
     err_EMAIL_TAKEN: 'يوجد حساب بهذا البريد الإلكتروني. سجّل الدخول بدلًا من ذلك أو استخدم «نسيت كلمة المرور؟».',
-    err_WEAK_PASSWORD: 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل وتحتوي على حروف وأرقام.',
+    err_WEAK_PASSWORD: 'يجب أن تتكون كلمة المرور من 6 خانات على الأقل.',
     err_INVALID_EMAIL: 'أدخل بريدًا إلكترونيًا صحيحًا.', err_REGISTRATION_CLOSED: 'التسجيل مغلق. اطلب من مسؤول المكتبة إنشاء حسابك.',
     err_DOMAIN_NOT_ALLOWED: 'يرجى التسجيل باستخدام بريد المدرسة الإلكتروني.', err_BAD_SETUP_KEY: 'هذه ليست كلمة المرور السرية. انسخ ADMIN_SETUP_KEY من Vercel مرة أخرى.',
     err_SETUP_DISABLED: 'قيمة ADMIN_SETUP_KEY غير موجودة في Vercel. أضفها وأعد النشر ثم عد إلى هنا.',
@@ -125,6 +125,31 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
       <div class="login-card">${inner}</div>
     </div>`;
     root.style.display = 'flex';
+    addEyes(root);
+  }
+  // Every password box gets an eye button that shows or hides what was typed.
+  function addEyes(scope) {
+    scope.querySelectorAll('input[type="password"]').forEach((inp) => {
+      if (inp.parentElement.classList.contains('pw-wrap')) return;
+      const wrap = document.createElement('span');
+      wrap.className = 'pw-wrap';
+      inp.replaceWith(wrap);
+      wrap.appendChild(inp);
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'pw-eye';
+      const set = (shown) => {
+        inp.type = shown ? 'text' : 'password';
+        b.setAttribute('aria-pressed', String(shown));
+        b.setAttribute('aria-label', t(shown ? 'a_hidePw' : 'a_showPw'));
+        b.title = t(shown ? 'a_hidePw' : 'a_showPw');
+        b.innerHTML = shown
+          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0 1 12 6c5 0 9 6 9 6a17 17 0 0 1-3 3.6M6.6 6.6C4.2 8.2 3 12 3 12s4 6 9 6a9 9 0 0 0 4.2-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>'
+          : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+      };
+      b.addEventListener('click', () => { set(inp.type === 'password'); inp.focus(); });
+      set(false);
+      wrap.appendChild(b);
+    });
   }
   function fieldErr(msg) { const e = $('#aErr', root); if (e) { e.textContent = msg; e.style.display = msg ? 'block' : 'none'; } }
   function notice(msg, kind = 'info') { return msg ? `<div class="auth-notice ${kind}">${esc(msg)}</div>` : ''; }
@@ -341,6 +366,7 @@ export function createAuth({ root, api, i18n, appName, appSub, roleName, iconSvg
     if (voluntary && onDone) {
       sheetHandle = onDone.openSheet(html);
       scope = sheetHandle.el;
+      addEyes(scope);
     } else card(html);
     const ferr = (m) => { const e = $('#aErr', scope); e.textContent = m; e.style.display = m ? 'block' : 'none'; };
     $('#aOut', scope).onclick = (e) => { e.preventDefault(); if (sheetHandle) sheetHandle.close(); else signOut(); };

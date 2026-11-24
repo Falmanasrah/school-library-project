@@ -209,6 +209,14 @@ test('full school library workflow', async (t) => {
     // Teachers can cancel their own requests but not other teachers'.
     await fail('FORBIDDEN', 'teachers', 'booking.cancel', { id: S.b4 }, S.khalid);
     await ok('teachers', 'booking.cancel', { id: S.b4 }, S.sarah);
+    // A library teacher removes a booking with a reason; the teacher sees the reason and the period is free again.
+    const b5 = (await ok('teachers', 'booking.create', booking(S.day1, 3, { gradeSection: '5B' }), S.sarah)).id;
+    await fail('INVALID_INPUT', 'library', 'booking.remove', { id: b5, reason: ' ' }, S.mona);
+    await ok('library', 'booking.remove', { id: b5, reason: 'The class came late' }, S.mona);
+    const removed = (await ok('teachers', 'teacher.sync', {}, S.sarah)).mine.find(b => b.id === b5);
+    assert.equal(removed.status, 'cancelled');
+    assert.equal(removed.decisionNote, 'The class came late');
+    await fail('NOT_CANCELLABLE', 'library', 'booking.remove', { id: b5, reason: 'Again' }, S.mona);
     const lib = await ok('library', 'library.sync', {}, S.mona);
     assert.equal(lib.pending.length, 1, 'only booking b3 is still pending');
   });

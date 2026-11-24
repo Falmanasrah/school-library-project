@@ -1,6 +1,6 @@
 // Shared client library for the three school library apps.
 // Each app imports this module but keeps its own session, interface and navigation.
-export const VERSION = '2.2.0';
+export const VERSION = '2.3.0';
 
 /* ---------------- text & html ---------------- */
 export function esc(v) {

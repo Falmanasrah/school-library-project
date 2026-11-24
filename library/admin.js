@@ -7,7 +7,8 @@ import {
 } from '/library/common.js';
 
 const ROLES = ['teacher', 'librarian', 'supervisor', 'admin'];
-const SUBS = ['overview', 'accounts', 'bookings', 'periods', 'settings', 'audit'];
+// Bookings now live on the Visits & Bookings page ("All bookings").
+const SUBS = ['overview', 'accounts', 'periods', 'settings', 'audit'];
 const roleChips = (roles) => roles.map(r => `<span class="chip">${esc(t('role_' + r))}</span>`).join('') || '<span class="muted">—</span>';
 const roleChecks = (sel = []) => `<div class="fg full"><label>${esc(t('roles'))}</label><div class="role-checks">${ROLES.map(r => `<label><input type="checkbox" name="role" value="${r}"${sel.includes(r) ? ' checked' : ''} /> ${esc(t('role_' + r))}</label>`).join('')}</div><small class="hint">${esc(t('librarianIsAdmin'))}</small></div>`;
 // How an account signs in: its username (and email, if it has one).
@@ -44,11 +45,15 @@ const Overview = {
     const stat = (n, label, go) => `<div class="stat click" data-go="${go}"><div class="n">${esc(n)}</div><div class="l">${esc(label)}</div></div>`;
     const p = d.period;
     this.box.innerHTML = `
+      <div class="btn-row quick-row" style="margin-bottom:14px">
+        <button class="btn primary" type="button" data-act="qteacher">＋ ${esc(t('newTeacher'))}</button>
+        <button class="btn" type="button" data-act="qbooking">＋ ${esc(t('newBooking'))}</button>
+      </div>
       <div class="stats">
-        ${stat(d.pending.filter(matchLib).length, t('pendingReq'), 'tab:requests')}
-        ${stat(d.visits.filter(matchLib).length, t('classesToday'), 'tab:log')}
+        ${stat(d.pending.filter(matchLib).length, t('pendingReq'), 'tab:visits.today')}
+        ${stat(d.visits.filter(matchLib).length, t('classesToday'), 'tab:records.class')}
         ${stat(d.slips.filter(matchLib).length, t('slipsToday'), 'tab:slips')}
-        ${stat(d.visitors.filter(matchLib).length, t('studentsIn'), 'tab:visitors')}
+        ${stat(d.visitors.filter(matchLib).length, t('studentsIn'), 'tab:records.visitors')}
         ${stat(Users.list ? Users.list.length : '…', t('totalAccounts'), 'sub:accounts')}
       </div>
       <div class="banner ${p.current?.state === 'open' ? 'open' : p.next ? 'scheduled' : 'closed'}">
@@ -71,6 +76,8 @@ const Overview = {
       </div>`;
   },
   async onClick(e, a) {
+    if (a?.dataset.act === 'qteacher') return newAccount(['teacher']);
+    if (a?.dataset.act === 'qbooking') return Bookings.form(null);
     if (a?.dataset.act === 'health') {
       a.disabled = true;
       try { this.health = await api.call('admin.system.health'); } catch (err) { this.health = { error: errorText(err, i18n) }; }
@@ -128,14 +135,15 @@ const Accounts = {
   }
 };
 
-function newAccount() {
+// A new account; teacher is ticked unless other roles are given.
+export function newAccount(defaultRoles = ['teacher']) {
   formSheet({
-    title: t('newAccount'), wide: true, submitLabel: t('newAccount'),
+    title: defaultRoles.length === 1 && defaultRoles[0] === 'teacher' ? t('newTeacher') : t('newAccount'), wide: true, submitLabel: t('newAccount'),
     fields: [
       { id: 'name', label: t('a_name'), maxlength: 80 },
       { id: 'username', label: t('username'), maxlength: 30, autocomplete: 'off', hint: t('usernameTempHint') },
       { id: 'email', label: t('email'), type: 'email', autocomplete: 'off', optional: true },
-      { type: 'html', html: roleChecks([]) },
+      { type: 'html', html: roleChecks(defaultRoles) },
       { id: 'password', label: t('tempPassword'), value: genPassword(), autocomplete: 'off', hint: t('a_passHint') },
       { id: 'mustChangePassword', type: 'check', label: t('mustChange'), value: true }
     ],
@@ -145,7 +153,7 @@ function newAccount() {
       await api.call('admin.user.create', { ...v, roles });
       toast(t('accountCreated'));
       await Users.load(true).catch(() => {});
-      ctl.refresh(); Accounts.renderList();
+      ctl.refresh(); if (Accounts.box?.isConnected) Accounts.renderList();
       setTimeout(() => detailSheet({ title: t('accountCreated'), sub: esc(t('giveTemp')), rows: [[t('a_name'), v.name], [t('username'), v.username.toLowerCase()], [t('roles'), roles.map(r => t('role_' + r)).join(', ')], [t('tempPassword'), `<b class="code">${esc(v.password)}</b>`, true]] }), 250);
     }
   });
@@ -273,7 +281,7 @@ async function manageAccount(uid) {
 }
 
 /* ======================= Bookings ======================= */
-const Bookings = {
+export const Bookings = {
   q: null, items: null,
   mount(box) {
     this.box = box;
@@ -285,13 +293,14 @@ const Bookings = {
         <div class="fg"><label for="bStatus">${esc(t('status'))}</label><select id="bStatus">${st.map(s => `<option value="${s}"${this.q.status === s ? ' selected' : ''}>${esc(s === 'all' ? t('allStatusesB') : t('st_' + s))}</option>`).join('')}</select></div>
         <div class="fg grow"><label for="bText">${esc(t('search'))}</label><input id="bText" value="${esc(this.q.text)}" placeholder="${esc(t('searchPh'))}" /></div>
         <button class="btn primary" type="button" data-act="bsearch">${esc(t('search'))}</button>
-        <button class="btn" type="button" data-act="badd">＋ ${esc(t('addBooking'))}</button><div class="out-group"><button class="btn" type="button" data-act="bcsv">${esc(t('exportCsv'))}</button></div></div>
+        <div class="out-group"><button class="btn" type="button" data-act="bcsv">${esc(t('exportCsv'))}</button></div></div>
       <div id="bRes">${emptyHtml(t('loading'))}</div>`;
     $('#bText', box).onkeydown = (e) => { if (e.key === 'Enter') this.search(false); };
     this.search(true);
   },
   update() { if (S.d.versions?.bookings !== this.ver) this.search(true); },
   async search(silent) {
+    if (!this.q || !this.box?.isConnected) return; // not on screen (e.g. after "+ New booking" from another page)
     if (!silent) {
       this.q.from = $('#bFrom', this.box).value || this.q.from; this.q.to = $('#bTo', this.box).value || this.q.to;
       this.q.status = $('#bStatus', this.box).value; this.q.text = $('#bText', this.box).value.trim();
@@ -336,7 +345,7 @@ const Bookings = {
       ...(b ? [{ id: 'decisionNote', label: t('decisionNote'), type: 'textarea', value: b.decisionNote || '', full: true, maxlength: 300, optional: true }] : [])
     ];
     formSheet({
-      title: b ? `${t('edit')}: ${t('bookingTitle')} · ${b.teacherName}` : t('addBooking'), wide: true, fields,
+      title: b ? `${t('edit')}: ${t('bookingTitle')} · ${b.teacherName}` : t('newBooking'), wide: true, fields,
       onSubmit: async (v) => {
         if (!b && !v.teacherUid) throw userError(t('chooseTeacher') + ' ?');
         v.period = Number(v.period);
@@ -558,7 +567,7 @@ const Audit = {
 };
 
 /* ======================= Admin root ======================= */
-const VIEWS = { overview: Overview, accounts: Accounts, bookings: Bookings, periods: Periods, settings: Settings, audit: Audit };
+const VIEWS = { overview: Overview, accounts: Accounts, periods: Periods, settings: Settings, audit: Audit };
 
 export const AdminView = {
   sub: SUBS.includes(store.get('lib.adminTab')) ? store.get('lib.adminTab') : 'overview',

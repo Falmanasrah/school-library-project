@@ -224,6 +224,23 @@ export default {
     }
   },
 
+  'booking.remove': {
+    auth: 'active', apps: ['library'], roles: LIB_ROLES,
+    async handler(ctx, d) {
+      const reason = multiline(d.reason, 'Reason', 300);
+      if (!reason) throw bad('INVALID_INPUT', 'Give a reason for removing the booking.', { field: 'reason' });
+      await ctx.db.runTransaction(async (tx) => {
+        const { b, slot } = await loadBookingTx(tx, d.id);
+        if (!ACTIVE_BOOKING_STATUSES.includes(b.status)) throw bad('NOT_CANCELLABLE', 'This booking can no longer be removed.');
+        tx.update('bookingRequests', b.id, { status: 'cancelled', cancelledAt: ctx.now, decidedBy: ctx.user.id, decidedByName: ctx.user.name, decidedAt: ctx.now, decisionNote: reason, updatedAt: ctx.now });
+        if (slot) tx.delete('bookingSlots', slot.id);
+        auditTx(tx, ctx, 'booking.removed', { targetType: 'booking', targetId: b.id, summary: `Removed ${b.teacherName}'s booking for ${b.date} period ${b.period}: ${reason}` });
+      });
+      await bump(ctx, 'bookings');
+      return { ok: true };
+    }
+  },
+
   /* ---------------- Admin ---------------- */
   'admin.booking.create': {
     auth: 'active', apps: ['library'], roles: ADMIN_ROLES,

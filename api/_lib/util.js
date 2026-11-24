@@ -88,9 +88,8 @@ export function username(v, field = 'Username') {
 
 export function password(v, field = 'Password') {
   if (typeof v !== 'string') throw bad('INVALID_INPUT', `${field} is required.`, { field });
-  if (v.length < 8) throw bad('WEAK_PASSWORD', 'Password must be at least 8 characters.', { field });
+  if (v.length < 6) throw bad('WEAK_PASSWORD', 'Password must be at least 6 characters.', { field });
   if (v.length > 200) throw bad('INVALID_INPUT', 'Password is too long.', { field });
-  if (!/[A-Za-z]/.test(v) || !/[0-9]/.test(v)) throw bad('WEAK_PASSWORD', 'Password must contain letters and numbers.', { field });
   return v;
 }
 

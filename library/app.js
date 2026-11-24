@@ -1,5 +1,5 @@
-// Library Teachers App: visits list, booking approval, permission slips,
-// visits log, visitors log and (for administrators) the admin panel.
+// Library Teachers App: four pages — Visits & Bookings, Permission Slips,
+// Records (Visits Log + Visitors Log) and the Admin Panel.
 import {
   VERSION, createSync, $, errorText, confirmDialog, initTheme, downloadCsv, printHtml, setupAutoUpdate, setupInstall,
   addDays, weekdayOf, closeAllSheets, fmtDuration
@@ -10,7 +10,7 @@ import {
   i18n, t, api, S, ctl, badge, libShort, langLabel, dLabel, dLong, dt, matchLib, nowHM, defaultLib, isAdmin, reasonText,
   libOptions, langOptions, periodOptions, act, formSheet, detailSheet, emptyHtml, sortRows, userError, esc, store, toast, openSheet
 } from '/library/common.js';
-import { AdminView } from '/library/admin.js';
+import { AdminView, Bookings } from '/library/admin.js';
 import { startTour, tourOnce, mountMenu, setSignedIn } from '/shared/guide.js';
 
 const LOGO = '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#1f7a5a" stroke-width="1.6"><path d="M4 19V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v14"/><path d="M9 19V7a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v12"/><path d="M14.5 6.5l2.9-.8a1 1 0 0 1 1.2.7l3 11.2"/><path d="M3 19h18"/></svg>';
@@ -72,10 +72,35 @@ const bookingActions = {
       onSubmit: async (v) => { await api.call('booking.checkIn', { id: b.id, ...v }); toast(t('checkedIn')); ctl.refresh(); }
     });
   },
-  async noShow(b) {
-    const ok = await confirmDialog({ title: t('noShowTitle'), message: esc(t('noShowBody')) + bookingSummary(b), confirmLabel: t('noShow'), cancelLabel: t('cancel'), danger: true });
-    if (ok) await act(() => api.call('booking.noShow', { id: b.id }), t('markedNoShow'));
+  remove(b) {
+    const lang = i18n.lang === 'ar' ? 1 : 0;
+    formSheet({
+      title: t('removeTitle'), sub: t('removeSub'), extra: bookingSummary(b), submitLabel: t('remove'), danger: true,
+      fields: [
+        { id: 'why', label: t('removeWhy'), type: 'choice', full: true, value: b.date <= S.today ? 'absent' : 'teacher', options: Object.keys(REMOVE_REASONS).map(k => ({ value: k, label: REMOVE_REASONS[k][lang] })) },
+        { id: 'note', label: t('removeNote'), type: 'textarea', full: true, maxlength: 250, optional: true }
+      ],
+      onSubmit: async (v) => {
+        if (v.why === 'other' && !v.note) throw userError(t('removeNoteReq'));
+        if (v.why === 'absent' && b.date <= S.today) {
+          await api.call('booking.noShow', { id: b.id, notes: v.note });
+          toast(t('markedNoShow'));
+        } else {
+          const reason = v.why === 'other' ? v.note : REMOVE_REASONS[v.why].join(' / ') + (v.note ? ' — ' + v.note : '');
+          await api.call('booking.remove', { id: b.id, reason });
+          toast(t('removed'));
+        }
+        ctl.refresh();
+      }
+    });
   }
+};
+// Saved in both languages, so the teacher can read the reason in either.
+const REMOVE_REASONS = {
+  absent: ["The class didn't come", 'لم يحضر الصف'],
+  late: ['The class came late', 'تأخر الصف'],
+  teacher: ['The teacher cancelled', 'ألغى المعلم/ة الحجز'],
+  other: ['Other reason', 'سبب آخر']
 };
 function checkOutVisit(v, after) {
   formSheet({
@@ -85,11 +110,18 @@ function checkOutVisit(v, after) {
   });
 }
 
-/* ======================= Visits List ======================= */
+/* ======================= Visits & Bookings ======================= */
+// One page for bookings: requests waiting for approval, the classes coming, and (under "All bookings") every booking.
+const RANGES = ['today', 'week', 'upcoming', 'all'];
 const VisitsView = {
-  range: ['today', 'week', 'upcoming'].includes(store.get('lib.visitsRange')) ? store.get('lib.visitsRange') : 'today',
+  range: RANGES.includes(store.get('lib.visitsRange')) ? store.get('lib.visitsRange') : 'today',
   mount(el) { this.el = el; el.onclick = (e) => this.onClick(e); this.render(); },
-  update() { this.render(); },
+  update() {
+    if (this.range !== 'all') return this.render();
+    const box = $('#pendBox', this.el);
+    if (box) box.innerHTML = this.pendingHtml();
+    return Bookings.update();
+  },
   rows() {
     const today = S.today;
     // "This week" = until Thursday of the current school week (Sun–Thu); on Friday/Saturday, the coming one.
@@ -100,37 +132,52 @@ const VisitsView = {
       .sort((a, b) => a.date.localeCompare(b.date) || a.period - b.period || a.library.localeCompare(b.library));
   },
   render() {
+    const all = this.range === 'all';
+    const seg = RANGES.map(r => `<button type="button" data-range="${r}" class="${this.range === r ? 'on' : ''}">${esc(t(r === 'week' ? 'thisWeek' : r === 'all' ? 'allBookings' : r))}</button>`).join('');
+    this.el.innerHTML = `
+      <div class="page-head"><div><h2>${esc(t('tabVisits'))}</h2><p>${esc(t('vbSub'))}</p></div>
+        <div class="btn-row"><button class="btn primary" type="button" data-act="newbooking">＋ ${esc(t('newBooking'))}</button>${all ? '' : `<div class="out-group"><button class="btn" type="button" data-act="print">${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div>`}</div></div>
+      <div id="pendBox">${this.pendingHtml()}</div>
+      <div class="seg range-seg" style="margin:4px 0 14px">${seg}</div>
+      <div id="visBody"></div>`;
+    const body = $('#visBody', this.el);
+    if (all) Bookings.mount(body); else body.innerHTML = this.daysHtml();
+  },
+  // Booking requests from teachers that wait for Approve / Reject, always shown at the top.
+  pendingHtml() {
+    const pend = S.d.pending.filter(matchLib);
+    if (!pend.length) return '';
+    return `<div class="card pend-card"><div class="section-title" style="margin-top:0"><h3>${esc(t('waitingApproval'))}</h3><span class="n">${pend.length}</span></div>
+      ${periodBanner()}
+      <div class="list">${pend.map(b => `<div class="item"><div class="main">
+        <div class="title">${esc(b.gradeSection)} · ${esc(b.teacherName)}</div>
+        <div class="meta"><b>${esc(dLong(b.date))}</b> · ${esc(t('period'))} ${esc(b.period)} (${esc(timeRange(b.startTime, b.endTime))}) · ${esc(b.students)} ${esc(t('studentsShort'))} · ${esc(langLabel(b.classLanguage))}${libCol() ? ' · ' + esc(t(b.library)) : ''}
+        ${b.notes ? `<br>${esc(t('notes'))}: ${esc(b.notes)}` : ''}<br><span class="small">${esc(t('requestedOn', dt(b.createdAt)))}</span></div></div>
+        <div class="btn-row"><button class="btn good" type="button" data-act="approve" data-id="${esc(b.id)}">✓ ${esc(t('approve'))}</button><button class="btn danger" type="button" data-act="reject" data-id="${esc(b.id)}">✕ ${esc(t('reject'))}</button></div></div>`).join('')}</div></div>`;
+  },
+  daysHtml() {
     const rows = this.rows();
     const inLib = S.d.visits.filter(v => v.status === 'in_library' && matchLib(v));
     const days = new Map();
     for (const b of rows) { if (!days.has(b.date)) days.set(b.date, []); days.get(b.date).push(b); }
-    const seg = ['today', 'week', 'upcoming'].map(r => `<button type="button" data-range="${r}" class="${this.range === r ? 'on' : ''}">${esc(t(r === 'week' ? 'thisWeek' : r))}</button>`).join('');
     const head = `<tr><th>${esc(t('period'))}</th><th>${esc(t('time'))}</th><th>${esc(t('gradeSection'))}</th><th>${esc(t('studentsShort'))}</th><th>${esc(t('teacherName'))}</th><th>${esc(t('classLang'))}</th>${libCol() ? `<th>${esc(t('library'))}</th>` : ''}<th>${esc(t('notes'))}</th><th>${esc(t('status'))}</th><th></th></tr>`;
     const dayBlocks = [...days.entries()].map(([date, list]) => {
       const total = list.reduce((n, b) => n + (Number(b.students) || 0), 0);
       return `<div class="day-head"><b>${esc(dLong(date))}${date === S.today ? ` · ${esc(t('today'))}` : ''}</b><span class="muted">${esc(t('totalStudents', list.length, total))}</span></div>
         <div class="table-wrap"><table class="data"><thead>${head}</thead><tbody>${list.map(b => this.rowHtml(b)).join('')}</tbody></table></div>`;
     }).join('');
-    this.el.innerHTML = `
-      <div class="page-head"><div><h2>${esc(t('visitsTitle'))}</h2><p>${esc(t('visitsSub'))}</p></div>
-        <div class="btn-row"><div class="seg">${seg}</div><div class="out-group"><button class="btn" type="button" data-act="print">${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div></div></div>
-      ${inLib.length ? `<div class="section-title"><h3>${esc(t('inLibraryNow'))}</h3><span class="n">${inLib.length}</span></div>
+    return `${inLib.length ? `<div class="section-title"><h3>${esc(t('inLibraryNow'))}</h3><span class="n">${inLib.length}</span></div>
         <div class="list">${inLib.map(v => `<div class="item highlight"><div class="main"><div class="title">${esc(v.gradeSection)} · ${esc(v.teacherName)}</div>
           <div class="meta">${esc(t('arrived'))} ${esc(v.arrivedAt || '—')} · ${esc(v.students)} ${esc(t('studentsShort'))}${libCol() ? ' · ' + esc(libShort(v.library)) : ''}${v.source === 'walkin' ? ` · <span class="chip">${esc(t('src_walkin'))}</span>` : ''}</div></div>
           <button class="btn primary sm" type="button" data-act="checkout" data-id="${esc(v.id)}">${esc(t('checkOut'))}</button></div>`).join('')}</div>` : ''}
-      <div style="margin-top:16px">${dayBlocks || emptyHtml(t('noVisits'))}</div>`;
+      <div style="margin-top:4px">${dayBlocks || emptyHtml(t('noVisits'))}</div>`;
   },
   rowHtml(b) {
     const v = b.status === 'completed' ? visitFor(b) : null;
-    const today = b.date === S.today;
     const btns = [];
-    if (today && b.status === 'approved') {
-      btns.push(`<button class="btn primary sm" type="button" data-act="checkin" data-id="${esc(b.id)}">${esc(t('checkIn'))}</button>`);
-      btns.push(`<button class="btn sm" type="button" data-act="noshow" data-id="${esc(b.id)}">${esc(t('noShow'))}</button>`);
-    }
-    if (b.status === 'pending') {
-      btns.push(`<button class="btn good sm" type="button" data-act="approve" data-id="${esc(b.id)}">${esc(t('approve'))}</button>`);
-      btns.push(`<button class="btn danger sm" type="button" data-act="reject" data-id="${esc(b.id)}">${esc(t('reject'))}</button>`);
+    if (b.status === 'approved') {
+      if (b.date === S.today) btns.push(`<button class="btn primary sm" type="button" data-act="checkin" data-id="${esc(b.id)}">${esc(t('checkIn'))}</button>`);
+      btns.push(`<button class="btn sm" type="button" data-act="remove" data-id="${esc(b.id)}">${esc(t('remove'))}</button>`);
     }
     if (v && v.status === 'in_library') btns.push(`<button class="btn primary sm" type="button" data-act="checkout" data-id="${esc(v.id)}">${esc(t('checkOut'))}</button>`);
     const studentsCell = v ? `${esc(v.students)}<span class="sub">${esc(t('expected', b.students))}</span>` : esc(b.students);
@@ -143,18 +190,19 @@ const VisitsView = {
     const r = e.target.closest('[data-range]');
     if (r) { this.range = r.dataset.range; store.set('lib.visitsRange', this.range); return this.render(); }
     const a = e.target.closest('[data-act]');
-    if (!a) return;
+    if (!a) return undefined;
     const id = a.dataset.id;
-    const b = id ? S.d.upcoming.find(x => x.id === id) : null;
+    const b = id ? (S.d.upcoming.find(x => x.id === id) || S.d.pending.find(x => x.id === id)) : null;
     switch (a.dataset.act) {
+      case 'newbooking': return Bookings.form(null);
       case 'checkin': return b && bookingActions.checkIn(b);
-      case 'noshow': return b && bookingActions.noShow(b);
+      case 'remove': return b && bookingActions.remove(b);
       case 'approve': return b && bookingActions.approve(b);
       case 'reject': return b && bookingActions.reject(b);
       case 'checkout': { const v = S.d.visits.find(x => x.id === id); return v && checkOutVisit(v); }
       case 'print': return this.print();
       case 'csv': return this.csv();
-      default: return undefined;
+      default: return this.range === 'all' ? Bookings.onClick(e, a) : undefined;
     }
   },
   printable() {
@@ -173,76 +221,6 @@ const VisitsView = {
   }
 };
 
-/* ======================= Booking Requests ======================= */
-const RequestsView = {
-  mode: 'pending', q: null, items: null,
-  mount(el) {
-    this.el = el; el.onclick = (e) => this.onClick(e);
-    if (!this.q) this.q = { from: addDays(S.today, -30), to: addDays(S.today, 90), status: 'all', text: '' };
-    this.render();
-    if (this.mode === 'history') this.search(true);
-  },
-  update() {
-    if (this.mode === 'pending') return this.render();
-    $('#reqBanner', this.el).innerHTML = periodBanner();
-    $('#reqCount', this.el).textContent = S.d.pending.filter(matchLib).length || '';
-  },
-  render() {
-    const pend = S.d.pending.filter(matchLib);
-    this.el.innerHTML = `
-      <div class="page-head"><div><h2>${esc(t('requestsTitle'))}</h2><p>${esc(t('requestsSub'))}</p></div>
-        <div class="seg"><button type="button" data-mode="pending" class="${this.mode === 'pending' ? 'on' : ''}">${esc(t('pendingTab'))} <span id="reqCount">${pend.length || ''}</span></button><button type="button" data-mode="history" class="${this.mode === 'history' ? 'on' : ''}">${esc(t('historyTab'))}</button></div></div>
-      <div id="reqBanner">${periodBanner()}</div>
-      <div id="reqBody">${this.mode === 'pending' ? this.pendingHtml(pend) : this.historyHtml()}</div>`;
-  },
-  pendingHtml(pend) {
-    if (!pend.length) return emptyHtml(t('noPending'));
-    return `<div class="list">${pend.map(b => `<div class="item"><div class="main">
-        <div class="title">${esc(b.gradeSection)} · ${esc(b.teacherName)}</div>
-        <div class="meta"><b>${esc(dLong(b.date))}</b> · ${esc(t('period'))} ${esc(b.period)} (${esc(timeRange(b.startTime, b.endTime))}) · ${esc(b.students)} ${esc(t('studentsShort'))} · ${esc(langLabel(b.classLanguage))}${libCol() ? ' · ' + esc(t(b.library)) : ''}
-        ${b.notes ? `<br>${esc(t('notes'))}: ${esc(b.notes)}` : ''}<br><span class="small">${esc(t('requestedOn', dt(b.createdAt)))}</span></div></div>
-        <div class="btn-row"><button class="btn good" type="button" data-act="approve" data-id="${esc(b.id)}">✓ ${esc(t('approve'))}</button><button class="btn danger" type="button" data-act="reject" data-id="${esc(b.id)}">✕ ${esc(t('reject'))}</button></div></div>`).join('')}</div>`;
-  },
-  historyHtml() {
-    const st = ['all', 'pending', 'approved', 'rejected', 'cancelled', 'completed', 'no_show'];
-    return `<div class="toolbar">${toolbarDates(this.q)}
-        <div class="fg"><label for="qStatus">${esc(t('status'))}</label><select id="qStatus">${st.map(s => `<option value="${s}"${this.q.status === s ? ' selected' : ''}>${esc(s === 'all' ? t('all') : t('st_' + s))}</option>`).join('')}</select></div>
-        <div class="fg grow"><label for="qText">${esc(t('search'))}</label><input id="qText" value="${esc(this.q.text)}" placeholder="${esc(t('searchPh'))}" /></div>
-        <button class="btn primary" type="button" data-act="search">${esc(t('search'))}</button><div class="out-group"><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div></div>
-      <div id="histRes">${this.items ? this.resultsHtml() : emptyHtml(t('loading'))}</div>`;
-  },
-  resultsHtml() {
-    if (!this.items.length) return emptyHtml(t('nothingFound'));
-    return `<div class="table-wrap"><table class="data"><thead><tr><th>${esc(t('date'))}</th><th>${esc(t('period'))}</th>${libCol() ? `<th>${esc(t('library'))}</th>` : ''}<th>${esc(t('gradeSection'))}</th><th>${esc(t('studentsShort'))}</th><th>${esc(t('teacher'))}</th><th>${esc(t('status'))}</th><th>${esc(t('decidedBy'))}</th></tr></thead><tbody>
-      ${this.items.map(b => `<tr><td>${esc(dLabel(b.date))}</td><td>${esc(b.period)}<span class="sub">${esc(timeRange(b.startTime, b.endTime))}</span></td>${libCol() ? `<td>${esc(libShort(b.library))}</td>` : ''}
-        <td><b>${esc(b.gradeSection)}</b></td><td>${esc(b.students)}</td><td>${esc(b.teacherName)}<span class="sub">${esc(t('requestedOn', dt(b.createdAt)))}</span></td><td>${badge(b.status)}</td>
-        <td>${esc(b.decidedByName || '—')}${b.decisionNote ? `<span class="sub">${esc(b.decisionNote)}</span>` : ''}</td></tr>`).join('')}</tbody></table></div>`;
-  },
-  readQ() { readDates(this.el, this.q); this.q.status = $('#qStatus', this.el).value; this.q.text = $('#qText', this.el).value.trim(); },
-  async search(silent) {
-    if (!silent) this.readQ();
-    try {
-      const r = await api.call('bookings.search', { from: this.q.from, to: this.q.to, status: this.q.status, q: this.q.text, library: S.filter });
-      this.items = r.items;
-      const box = $('#histRes', this.el);
-      if (box) box.innerHTML = this.resultsHtml();
-    } catch (e) { toast(errorText(e, i18n), true); }
-  },
-  onClick(e) {
-    const m = e.target.closest('[data-mode]');
-    if (m) { this.mode = m.dataset.mode; this.render(); if (this.mode === 'history') this.search(true); return; }
-    const a = e.target.closest('[data-act]');
-    if (!a) return;
-    const b = a.dataset.id ? S.d.pending.find(x => x.id === a.dataset.id) : null;
-    if (a.dataset.act === 'approve' && b) bookingActions.approve(b);
-    else if (a.dataset.act === 'reject' && b) bookingActions.reject(b);
-    else if (a.dataset.act === 'search') this.search(false);
-    else if (a.dataset.act === 'csv' && this.items) {
-      downloadCsv(`booking-requests-${this.q.from}-to-${this.q.to}.csv`, ['Date', 'Period', 'Start', 'End', 'Library', 'Grade/Section', 'Students', 'Arabic/English', 'Teacher', 'Notes', 'Status', 'Decided by', 'Decision note', 'Requested at'],
-        this.items.map(b => [b.date, b.period, b.startTime, b.endTime, b.library, b.gradeSection, b.students, b.classLanguage, b.teacherName, b.notes, b.status, b.decidedByName || '', b.decisionNote, new Date(b.createdAt).toISOString()]));
-    }
-  }
-};
 document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.id === 'qText') e.target.closest('main')?.querySelector('[data-act="search"]')?.click(); });
 
 /* ======================= Permission Slips ======================= */
@@ -598,37 +576,61 @@ const VisitorsView = {
   }
 };
 
+/* ======================= Records: Visits Log + Visitors Log ======================= */
+const RecordsView = {
+  mode: store.get('lib.recMode') === 'visitors' ? 'visitors' : 'class',
+  mount(el) {
+    this.el = el;
+    el.innerHTML = `<div class="seg rec-seg" style="margin-bottom:16px">${['class', 'visitors'].map(m => `<button type="button" data-rec="${m}" class="${this.mode === m ? 'on' : ''}">${esc(t(m === 'class' ? 'recClass' : 'recVisitors'))}</button>`).join('')}</div><div id="recBody"></div>`;
+    el.onclick = (e) => { const r = e.target.closest('[data-rec]'); if (r) this.show(r.dataset.rec); };
+    this.show(this.mode);
+  },
+  view() { return this.mode === 'visitors' ? VisitorsView : LogView; },
+  show(mode) {
+    this.mode = mode === 'visitors' ? 'visitors' : 'class';
+    store.set('lib.recMode', this.mode);
+    this.el.querySelectorAll('[data-rec]').forEach(b => b.classList.toggle('on', b.dataset.rec === this.mode));
+    this.view().mount($('#recBody', this.el));
+  },
+  update() { this.view().update(); }
+};
+
 /* ======================= tutorial ======================= */
 const tabEl = (k) => () => document.querySelector(`#tabs [data-tab="${k}"]`);
 const inMain = (sel) => () => document.querySelector(`#main ${sel}`);
 function runTour() {
   const back = S.tab;
   startTour([
-    { el: '#tabs', title: ['The pages of the app', 'صفحات التطبيق'], text: ['Everything is in these tabs. A red number on a tab means something is waiting for you.', 'كل إشي موجود بهاي التبويبات. الرقم الأحمر على التبويب يعني في إشي بستناك.'] },
-    { before: () => showTab('visits'), el: tabEl('visits'), title: ['Visits List', 'قائمة الزيارات'], text: ['The classes coming to the library today and this week. When a class arrives, press Check in.', 'الصفوف الجاية على المكتبة اليوم وهذا الأسبوع. لما يوصل الصف اضغط «تسجيل الحضور».'] },
-    { el: inMain('.page-head .seg'), title: ['Today, this week or later', 'اليوم، هذا الأسبوع أو بعدين'], text: ['Choose which days to show.', 'اختار الأيام اللي بدك تشوفها.'] },
-    { el: inMain('.out-group'), title: ['Print or download', 'طباعة أو تنزيل'], text: ['Print gives the paper Library Visits List form. Download saves the list as an Excel file.', '«طباعة» بتطلعلك نموذج قائمة زيارات المكتبة الورقي. «تنزيل» بحفظ القائمة كملف Excel.'] },
-    { before: () => showTab('requests'), el: tabEl('requests'), title: ['Booking Requests', 'طلبات الحجز'], text: ['Teachers ask for library periods here. Press Approve or Reject on each request.', 'هون بتوصل طلبات المعلمين لحجز حصص المكتبة. اضغط «موافقة» أو «رفض» على كل طلب.'] },
-    { before: () => showTab('slips'), el: tabEl('slips'), title: ['Permission Slips', 'أذونات الطلبة'], text: ['Slips from the floor supervisors arrive here straight away, with a sound.', 'الأذونات اللي ببعتها مشرفو الطوابق بتوصل هون فورًا مع صوت تنبيه.'] },
-    { el: inMain('.code-lookup'), title: ["Type the student's code", 'اكتب رمز الطالب/ة'], text: ['When a student arrives, type the 4-character code from their slip and press Find.', 'لما يوصل الطالب، اكتب الرمز (4 خانات) اللي معه واضغط «بحث».'] },
-    { before: () => showTab('log'), el: inMain('[data-act=add]'), title: ['Record a class visit', 'تسجيل زيارة صف'], text: ['A class came without booking? Record it here. This tab keeps every class visit.', 'إجا صف بدون حجز؟ سجّله من هون. هذا التبويب بحفظ كل زيارات الصفوف.'] },
-    { before: () => showTab('visitors'), el: inMain('[data-act=add]'), title: ['Add a visitor', 'إضافة زائر'], text: ['A student came on their own? Add them to the Visitors Log.', 'إجا طالب لحاله؟ ضيفه على سجل الزوار.'] },
-    { el: inMain('.out-group'), title: ['Print the Visitors Log', 'طباعة سجل الزوار'], text: ['Gives the paper Library Visitors Log form, one sheet for each day.', 'بتطلعلك نموذج سجل زوار المكتبة الورقي، ورقة لكل يوم.'] },
-    { el: '#libFilter', title: ['Which library', 'أي مكتبة'], text: ['Show one library or both.', 'اعرض مكتبة وحدة أو المكتبتين مع بعض.'] },
-    { el: tabEl('admin'), title: ['Admin Panel', 'لوحة الإدارة'], text: ['Accounts, booking periods, settings and the activity log.', 'الحسابات وفترات الحجز والإعدادات وسجل النشاط.'] },
-    { el: '#menuBtn', title: ['Menu', 'القائمة'], text: ['Language, dark mode, your password, sign out, and this tutorial again are all here.', 'اللغة، الوضع الداكن، كلمة المرور، تسجيل الخروج، وهذا الشرح مرة ثانية، كلهم هون.'] }
+    { el: '#tabs', title: ['The pages of the app', 'صفحات التطبيق'], text: ['There are only four pages. A red number on a page means something is waiting for you.', 'في التطبيق أربع صفحات فقط. الرقم الأحمر على الصفحة يعني أن هناك شيئًا بانتظارك.'] },
+    { before: () => showTab('visits.today'), el: tabEl('visits'), title: ['Visits & Bookings', 'الزيارات والحجوزات'], text: ['Everything about bookings is on this page: requests from teachers, the classes coming today and this week, and every booking.', 'كل ما يخص الحجوزات في هذه الصفحة: طلبات المعلمين، والصفوف القادمة اليوم وهذا الأسبوع، وكل الحجوزات.'] },
+    { el: inMain('[data-act=newbooking]'), title: ['New booking', 'حجز جديد'], text: ['Book a library period for a teacher yourself.', 'احجز حصة مكتبة لأي معلم/ة بنفسك.'] },
+    { el: inMain('.pend-card'), title: ['Requests from teachers', 'طلبات المعلمين'], text: ['New requests wait here at the top. Press Approve or Reject.', 'تظهر الطلبات الجديدة هنا في الأعلى. اضغط «موافقة» أو «رفض».'] },
+    { el: inMain('.range-seg'), title: ['Choose what to show', 'اختر ما تريد عرضه'], text: ['Today, this week, later, or All bookings to search, edit or delete any booking.', 'اليوم، أو هذا الأسبوع، أو القادمة، أو «كل الحجوزات» للبحث عن أي حجز وتعديله أو حذفه.'] },
+    { el: inMain('[data-act=checkin]'), title: ['Check in', 'تسجيل الحضور'], text: ['When a class arrives, press Check in.', 'عند وصول الصف، اضغط «تسجيل الحضور».'] },
+    { el: inMain('[data-act=remove]'), title: ['Remove a booking', 'إلغاء حجز'], text: ["The class came late or didn't come? Press this and choose the reason. The teacher sees the reason.", 'تأخر الصف أو لم يحضر؟ اضغط هنا واختر السبب، وسيظهر السبب للمعلم/ة.'] },
+    { el: inMain('.out-group'), title: ['Print or download', 'طباعة أو تنزيل'], text: ['Print gives the paper Library Visits List form. Download saves it as an Excel file.', '«طباعة» تُخرج نموذج قائمة زيارات المكتبة الورقي، و«تنزيل» يحفظه كملف Excel.'] },
+    { before: () => showTab('slips'), el: tabEl('slips'), title: ['Permission Slips', 'أذونات الطلبة'], text: ['Slips from the floor supervisors arrive here straight away, with a sound.', 'تصل هنا فورًا الأذونات التي يرسلها مشرفو الطوابق، مع صوت تنبيه.'] },
+    { el: inMain('.code-lookup'), title: ["Type the student's code", 'اكتب رمز الطالب/ة'], text: ['When a student arrives, type the 4-character code from their slip and press Find.', 'عند وصول الطالب/ة، اكتب الرمز المكوّن من 4 خانات الموجود على الإذن واضغط «بحث».'] },
+    { before: () => showTab('records.class'), el: inMain('.rec-seg'), title: ['Records', 'السجلات'], text: ['The two paper logs: class visits and student visitors. Switch between them here.', 'السجلّان الورقيان: زيارات الصفوف والطلبة الزوار. بدّل بينهما من هنا.'] },
+    { el: inMain('#recBody [data-act=add]'), title: ['Record a class visit', 'تسجيل زيارة صف'], text: ['A class came without booking? Record it here.', 'حضر صف دون حجز؟ سجّله من هنا.'] },
+    { before: () => showTab('records.visitors'), el: inMain('#recBody [data-act=add]'), title: ['Add a visitor', 'إضافة زائر'], text: ['A student came on their own? Add them to the Visitors Log.', 'حضر طالب/ة بمفرده؟ أضِفه إلى سجل الزوار.'] },
+    { el: inMain('#recBody .out-group'), title: ['Print the Visitors Log', 'طباعة سجل الزوار'], text: ['Gives the paper Library Visitors Log form, one sheet for each day.', 'يُخرج نموذج سجل زوار المكتبة الورقي، ورقة لكل يوم.'] },
+    { el: '#libFilter', title: ['Which library', 'أي مكتبة'], text: ['Show one library or both.', 'اعرض مكتبة واحدة أو المكتبتين معًا.'] },
+    { before: () => showTab('admin'), el: tabEl('admin'), title: ['Admin Panel', 'لوحة الإدارة'], text: ['Make teacher accounts, open booking periods, change settings and see the activity log.', 'أنشئ حسابات المعلمين، وافتح فترات الحجز، وغيّر الإعدادات، واطّلع على سجل النشاط.'] },
+    { el: inMain('[data-act=qteacher]'), title: ['New teacher account', 'حساب معلم/ة جديد'], text: ['Make an account for a teacher in one step and give them the password shown.', 'أنشئ حسابًا لمعلم/ة بخطوة واحدة وأعطه كلمة المرور التي تظهر.'] },
+    { el: '#menuBtn', title: ['Menu', 'القائمة'], text: ['Language, dark mode, your password, sign out, and this tutorial again are all here.', 'اللغة، والوضع الداكن، وكلمة المرور، وتسجيل الخروج، وهذا الشرح مرة أخرى، كلها هنا.'] }
   ], { onEnd: () => showTab(back) });
 }
 
 /* ======================= app shell ======================= */
 const TABS = [
-  { key: 'visits', label: 'tabVisits', view: VisitsView },
-  { key: 'requests', label: 'tabRequests', view: RequestsView, count: () => S.d.pending.filter(matchLib).length },
+  { key: 'visits', label: 'tabVisits', view: VisitsView, count: () => S.d.pending.filter(matchLib).length },
   { key: 'slips', label: 'tabSlips', view: SlipsView, count: () => incoming().length },
-  { key: 'log', label: 'tabLog', view: LogView },
-  { key: 'visitors', label: 'tabVisitors', view: VisitorsView },
+  { key: 'records', label: 'tabRecords', view: RecordsView },
   { key: 'admin', label: 'tabAdmin', view: AdminView, admin: true, count: () => (S.d.attention || []).length }
 ];
+// Pages from before the merge, and "page.part" links (e.g. records.visitors).
+const OLD_TABS = { requests: 'visits', log: 'records.class', visitors: 'records.visitors' };
 let current = null;
 const tabsFor = () => TABS.filter(x => !x.admin || isAdmin());
 
@@ -639,7 +641,10 @@ function renderTabs() {
   }).join('');
 }
 function showTab(key) {
-  const tab = tabsFor().find(x => x.key === key) || TABS[0];
+  const [k, part] = String(OLD_TABS[key] || key).split('.');
+  if (k === 'records' && part) RecordsView.mode = part === 'visitors' ? 'visitors' : 'class';
+  if (k === 'visits' && RANGES.includes(part)) VisitsView.range = part;
+  const tab = tabsFor().find(x => x.key === k) || TABS[0];
   S.tab = tab.key; store.set('lib.tab', tab.key);
   renderTabs();
   current = tab.view;
@@ -742,8 +747,8 @@ function startApp(me) {
 function stopApp() {
   sync.stop();
   S.me = null; S.d = null; S.loaded = false; current = null;
-  RequestsView.items = null; SlipsView.items = null; LogView.items = null; VisitorsView.items = null;
-  RequestsView.q = SlipsView.q = LogView.q = VisitorsView.q = null;
+  SlipsView.items = null; LogView.items = null; VisitorsView.items = null;
+  SlipsView.q = LogView.q = VisitorsView.q = null;
   AdminView.reset?.();
   closeAllSheets();
   setSignedIn(false);

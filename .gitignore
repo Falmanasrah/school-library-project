@@ -5,3 +5,6 @@ node_modules/
 .env.*
 .vercel/
 .claude/
+
+# Private demo recordings (never committed or deployed)
+videos/

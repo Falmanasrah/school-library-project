@@ -3,7 +3,11 @@ export const LIB_I18N = {
   en: {
     appTitle: 'Library Teachers', loginSub: 'Library teachers & administrators', roleName: 'library teacher',
     allLibraries: 'All libraries', signedInAs: (n) => `Signed in as ${n}`, version: (v) => `Library Teachers App · version ${v} · updates automatically`,
-    tabVisits: 'Visits List', tabRequests: 'Booking Requests', tabSlips: 'Permission Slips', tabLog: 'Visits Log', tabVisitors: 'Visitors Log', tabAdmin: 'Admin Panel',
+    tabVisits: 'Visits & Bookings', tabRecords: 'Records', tabRequests: 'Booking Requests',
+    vbSub: 'Requests waiting for you, the classes coming to the library, and every booking.', allBookings: 'All bookings', newBooking: 'New booking',
+    waitingApproval: 'Waiting for your approval', remove: 'Remove', removeTitle: 'Remove this booking', removeSub: 'Choose the reason. The teacher will see it in their app.',
+    removeWhy: 'Reason', removeNote: 'Details', removeNoteReq: 'Write the reason in Details.', removed: 'Booking removed',
+    recClass: 'Class visits (Visits Log)', recVisitors: 'Student visitors (Visitors Log)', newTeacher: 'New teacher account', tabSlips: 'Permission Slips', tabLog: 'Visits Log', tabVisitors: 'Visitors Log', tabAdmin: 'Admin Panel',
     // common columns
     day: 'Day', date: 'Date', from: 'From', to: 'To', time: 'Time', period: 'Period', library: 'Library', teacher: 'Teacher', teacherName: 'Teacher Name',
     gradeSection: 'Grade / Section', students: 'Number of students', studentsShort: 'Students', classLang: 'Arabic / English class', notes: 'Notes', status: 'Status',
@@ -60,7 +64,11 @@ export const LIB_I18N = {
   ar: {
     appTitle: 'معلمو المكتبة', loginSub: 'معلمو المكتبة والمسؤولون', roleName: 'معلم/ة مكتبة',
     allLibraries: 'كل المكتبات', signedInAs: (n) => `مسجّل الدخول باسم ${n}`, version: (v) => `تطبيق معلمي المكتبة · الإصدار ${v} · يتم التحديث تلقائيًا`,
-    tabVisits: 'قائمة الزيارات', tabRequests: 'طلبات الحجز', tabSlips: 'أذونات الطلبة', tabLog: 'سجل الزيارات', tabVisitors: 'سجل الزوار', tabAdmin: 'لوحة الإدارة',
+    tabVisits: 'الزيارات والحجوزات', tabRecords: 'السجلات', tabRequests: 'طلبات الحجز',
+    vbSub: 'طلبات الحجز التي بانتظارك، والصفوف القادمة إلى المكتبة، وكل الحجوزات.', allBookings: 'كل الحجوزات', newBooking: 'حجز جديد',
+    waitingApproval: 'بانتظار موافقتك', remove: 'إلغاء الحجز', removeTitle: 'إلغاء هذا الحجز', removeSub: 'اختر السبب، وسيظهر للمعلم/ة في تطبيقه.',
+    removeWhy: 'السبب', removeNote: 'تفاصيل', removeNoteReq: 'اكتب السبب في خانة التفاصيل.', removed: 'تم إلغاء الحجز',
+    recClass: 'زيارات الصفوف (سجل الزيارات)', recVisitors: 'الطلبة الزوار (سجل الزوار)', newTeacher: 'حساب معلم/ة جديد', tabSlips: 'أذونات الطلبة', tabLog: 'سجل الزيارات', tabVisitors: 'سجل الزوار', tabAdmin: 'لوحة الإدارة',
     day: 'اليوم', date: 'التاريخ', from: 'من', to: 'إلى', time: 'الوقت', period: 'الحصة', library: 'المكتبة', teacher: 'المعلم/ة', teacherName: 'اسم المعلم/ة',
     gradeSection: 'الصف / الشعبة', students: 'عدد الطلبة', studentsShort: 'الطلبة', classLang: 'حصة عربي / إنجليزي', notes: 'ملاحظات', status: 'الحالة',
     actions: 'إجراءات', search: 'بحث', searchPh: 'اسم، صف، معلم…', print: 'طباعة', exportCsv: 'تنزيل (Excel)', edit: 'تعديل', delete: 'حذف', details: 'التفاصيل',

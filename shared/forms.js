@@ -21,7 +21,7 @@ export function visitsListHtml({ settings, rows }) {
       const v = page[i];
       if (!v) return '<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
       const notes = [v.status === 'no_show' ? 'Did not attend' : '', v.arrivedAt ? `${v.arrivedAt}${v.leftAt ? '–' + v.leftAt : ''}` : '', v.notes].filter(Boolean).join(' · ');
-      return `<tr><td>${esc(enDay(v.date))}</td><td>${esc(enDate(v.date))}</td><td>${esc(v.gradeSection)}</td><td>${v.status === 'no_show' ? '0' : esc(v.students)}</td>
+      return `<tr><td class="p-day">${esc(enDay(v.date))}</td><td class="p-day">${esc(enDate(v.date))}</td><td>${esc(v.gradeSection)}</td><td>${v.status === 'no_show' ? '0' : esc(v.students)}</td>
         <td>${esc(v.teacherName)}</td><td>${v.classLanguage === 'arabic' ? 'Arabic' : 'English'}</td><td class="l">${esc(notes)}</td></tr>`;
     }).join('');
     return `<section class="print-doc a4 f-visits">${banner()}

@@ -59,6 +59,7 @@ textarea { font-family: inherit; }
 .f-visits th { font: bold 13pt/1.15 "Times New Roman", Times, serif; height: 17mm; padding: 1mm; }
 .f-visits td { height: 33mm; padding: 1.5mm; font: 11pt "Times New Roman", Times, serif; }
 .f-visits .p-code { bottom: 32mm; }
+.f-visits td.p-day { font-size: 10pt; overflow-wrap: normal; word-break: keep-all; padding: 1mm 0.5mm; } /* day names stay on one line */
 /* Library Visitors Log */
 .f-visitors { font-family: Arial, Helvetica, sans-serif; }
 .f-visitors h1 { font: 17pt Arial, Helvetica, sans-serif; text-align: center; margin: 3mm 0 2mm; }
@@ -93,3 +94,9 @@ textarea { font-family: inherit; }
 
 .form-grid .check-row { grid-column: 1 / -1; }
 input.code-in { text-transform: uppercase; letter-spacing: 3px; font-weight: 700; font-family: ui-monospace, Consolas, monospace; }
+
+/* eye button inside password boxes */
+.pw-wrap { position: relative; display: block; }
+.pw-wrap input { padding-inline-end: 46px !important; }
+.pw-eye { position: absolute; inset-inline-end: 1px; top: 1px; bottom: 1px; width: 42px; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; color: var(--ink-soft); cursor: pointer; }
+.pw-eye:hover, .pw-eye[aria-pressed="true"] { color: var(--ink); }
