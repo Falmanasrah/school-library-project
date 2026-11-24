@@ -11,6 +11,7 @@ import {
   libOptions, langOptions, periodOptions, act, formSheet, detailSheet, emptyHtml, sortRows, userError, esc, store, toast, openSheet
 } from '/library/common.js';
 import { AdminView } from '/library/admin.js';
+import { startTour, tourOnce, mountMenu, setSignedIn } from '/shared/guide.js';
 
 const LOGO = '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#1f7a5a" stroke-width="1.6"><path d="M4 19V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v14"/><path d="M9 19V7a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v12"/><path d="M14.5 6.5l2.9-.8a1 1 0 0 1 1.2.7l3 11.2"/><path d="M3 19h18"/></svg>';
 
@@ -112,7 +113,7 @@ const VisitsView = {
     }).join('');
     this.el.innerHTML = `
       <div class="page-head"><div><h2>${esc(t('visitsTitle'))}</h2><p>${esc(t('visitsSub'))}</p></div>
-        <div class="btn-row"><div class="seg">${seg}</div><button class="btn" type="button" data-act="print">${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div></div>
+        <div class="btn-row"><div class="seg">${seg}</div><div class="out-group"><button class="btn" type="button" data-act="print">${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div></div></div>
       ${inLib.length ? `<div class="section-title"><h3>${esc(t('inLibraryNow'))}</h3><span class="n">${inLib.length}</span></div>
         <div class="list">${inLib.map(v => `<div class="item highlight"><div class="main"><div class="title">${esc(v.gradeSection)} · ${esc(v.teacherName)}</div>
           <div class="meta">${esc(t('arrived'))} ${esc(v.arrivedAt || '—')} · ${esc(v.students)} ${esc(t('studentsShort'))}${libCol() ? ' · ' + esc(libShort(v.library)) : ''}${v.source === 'walkin' ? ` · <span class="chip">${esc(t('src_walkin'))}</span>` : ''}</div></div>
@@ -123,7 +124,7 @@ const VisitsView = {
     const v = b.status === 'completed' ? visitFor(b) : null;
     const today = b.date === S.today;
     const btns = [];
-    if (today && ['pending', 'approved'].includes(b.status)) {
+    if (today && b.status === 'approved') {
       btns.push(`<button class="btn primary sm" type="button" data-act="checkin" data-id="${esc(b.id)}">${esc(t('checkIn'))}</button>`);
       btns.push(`<button class="btn sm" type="button" data-act="noshow" data-id="${esc(b.id)}">${esc(t('noShow'))}</button>`);
     }
@@ -207,7 +208,7 @@ const RequestsView = {
     return `<div class="toolbar">${toolbarDates(this.q)}
         <div class="fg"><label for="qStatus">${esc(t('status'))}</label><select id="qStatus">${st.map(s => `<option value="${s}"${this.q.status === s ? ' selected' : ''}>${esc(s === 'all' ? t('all') : t('st_' + s))}</option>`).join('')}</select></div>
         <div class="fg grow"><label for="qText">${esc(t('search'))}</label><input id="qText" value="${esc(this.q.text)}" placeholder="${esc(t('searchPh'))}" /></div>
-        <button class="btn primary" type="button" data-act="search">${esc(t('search'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div>
+        <button class="btn primary" type="button" data-act="search">${esc(t('search'))}</button><div class="out-group"><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div></div>
       <div id="histRes">${this.items ? this.resultsHtml() : emptyHtml(t('loading'))}</div>`;
   },
   resultsHtml() {
@@ -305,7 +306,7 @@ const SlipsView = {
     box.innerHTML = `<div class="toolbar">${toolbarDates(this.q)}
         <div class="fg"><label for="qStatus">${esc(t('status'))}</label><select id="qStatus">${st.map(s => `<option value="${s}"${this.q.status === s ? ' selected' : ''}>${esc(s === 'all' ? t('all') : t('st_' + s))}</option>`).join('')}</select></div>
         <div class="fg grow"><label for="qText">${esc(t('search'))}</label><input id="qText" value="${esc(this.q.text)}" placeholder="${esc(t('searchPh'))}" /></div>
-        <button class="btn primary" type="button" data-act="search">${esc(t('search'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button><button class="btn" type="button" data-act="printall">${esc(t('print'))}</button></div>
+        <button class="btn primary" type="button" data-act="search">${esc(t('search'))}</button><div class="out-group"><button class="btn" type="button" data-act="printall">${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div></div>
       <div id="histRes">${this.items ? this.histResults() : emptyHtml(t('loading'))}</div>`;
   },
   histResults() { return this.items.length ? this.table(this.items) : emptyHtml(t('nothingFound')); },
@@ -435,7 +436,7 @@ const LogView = {
       <div class="toolbar">${toolbarDates(this.q)}
         <div class="fg grow"><label for="qText">${esc(t('search'))}</label><input id="qText" value="${esc(this.q.text)}" placeholder="${esc(t('searchPh'))}" /></div>
         <button class="btn primary" type="button" data-act="search">${esc(t('search'))}</button>
-        <button class="btn" type="button" data-act="print">${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div>
+        <div class="out-group"><button class="btn" type="button" data-act="print">${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div></div>
       <div id="logRes">${emptyHtml(t('loading'))}</div>`;
     this.search(true);
   },
@@ -521,7 +522,7 @@ const VisitorsView = {
       <div class="toolbar">${toolbarDates(this.q)}
         <div class="fg grow"><label for="qText">${esc(t('search'))}</label><input id="qText" value="${esc(this.q.text)}" placeholder="${esc(t('searchPh'))}" /></div>
         <button class="btn primary" type="button" data-act="search">${esc(t('search'))}</button>
-        <button class="btn" type="button" data-act="print">${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div>
+        <div class="out-group"><button class="btn" type="button" data-act="print">${esc(t('print'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div></div>
       <div id="visRes">${emptyHtml(t('loading'))}</div>`;
     this.search(true);
   },
@@ -596,6 +597,28 @@ const VisitorsView = {
     }
   }
 };
+
+/* ======================= tutorial ======================= */
+const tabEl = (k) => () => document.querySelector(`#tabs [data-tab="${k}"]`);
+const inMain = (sel) => () => document.querySelector(`#main ${sel}`);
+function runTour() {
+  const back = S.tab;
+  startTour([
+    { el: '#tabs', title: ['The pages of the app', 'صفحات التطبيق'], text: ['Everything is in these tabs. A red number on a tab means something is waiting for you.', 'كل إشي موجود بهاي التبويبات. الرقم الأحمر على التبويب يعني في إشي بستناك.'] },
+    { before: () => showTab('visits'), el: tabEl('visits'), title: ['Visits List', 'قائمة الزيارات'], text: ['The classes coming to the library today and this week. When a class arrives, press Check in.', 'الصفوف الجاية على المكتبة اليوم وهذا الأسبوع. لما يوصل الصف اضغط «تسجيل الحضور».'] },
+    { el: inMain('.page-head .seg'), title: ['Today, this week or later', 'اليوم، هذا الأسبوع أو بعدين'], text: ['Choose which days to show.', 'اختار الأيام اللي بدك تشوفها.'] },
+    { el: inMain('.out-group'), title: ['Print or download', 'طباعة أو تنزيل'], text: ['Print gives the paper Library Visits List form. Download saves the list as an Excel file.', '«طباعة» بتطلعلك نموذج قائمة زيارات المكتبة الورقي. «تنزيل» بحفظ القائمة كملف Excel.'] },
+    { before: () => showTab('requests'), el: tabEl('requests'), title: ['Booking Requests', 'طلبات الحجز'], text: ['Teachers ask for library periods here. Press Approve or Reject on each request.', 'هون بتوصل طلبات المعلمين لحجز حصص المكتبة. اضغط «موافقة» أو «رفض» على كل طلب.'] },
+    { before: () => showTab('slips'), el: tabEl('slips'), title: ['Permission Slips', 'أذونات الطلبة'], text: ['Slips from the floor supervisors arrive here straight away, with a sound.', 'الأذونات اللي ببعتها مشرفو الطوابق بتوصل هون فورًا مع صوت تنبيه.'] },
+    { el: inMain('.code-lookup'), title: ["Type the student's code", 'اكتب رمز الطالب/ة'], text: ['When a student arrives, type the 4-character code from their slip and press Find.', 'لما يوصل الطالب، اكتب الرمز (4 خانات) اللي معه واضغط «بحث».'] },
+    { before: () => showTab('log'), el: inMain('[data-act=add]'), title: ['Record a class visit', 'تسجيل زيارة صف'], text: ['A class came without booking? Record it here. This tab keeps every class visit.', 'إجا صف بدون حجز؟ سجّله من هون. هذا التبويب بحفظ كل زيارات الصفوف.'] },
+    { before: () => showTab('visitors'), el: inMain('[data-act=add]'), title: ['Add a visitor', 'إضافة زائر'], text: ['A student came on their own? Add them to the Visitors Log.', 'إجا طالب لحاله؟ ضيفه على سجل الزوار.'] },
+    { el: inMain('.out-group'), title: ['Print the Visitors Log', 'طباعة سجل الزوار'], text: ['Gives the paper Library Visitors Log form, one sheet for each day.', 'بتطلعلك نموذج سجل زوار المكتبة الورقي، ورقة لكل يوم.'] },
+    { el: '#libFilter', title: ['Which library', 'أي مكتبة'], text: ['Show one library or both.', 'اعرض مكتبة وحدة أو المكتبتين مع بعض.'] },
+    { el: tabEl('admin'), title: ['Admin Panel', 'لوحة الإدارة'], text: ['Accounts, booking periods, settings and the activity log.', 'الحسابات وفترات الحجز والإعدادات وسجل النشاط.'] },
+    { el: '#menuBtn', title: ['Menu', 'القائمة'], text: ['Language, dark mode, your password, sign out, and this tutorial again are all here.', 'اللغة، الوضع الداكن، كلمة المرور، تسجيل الخروج، وهذا الشرح مرة ثانية، كلهم هون.'] }
+  ], { onEnd: () => showTab(back) });
+}
 
 /* ======================= app shell ======================= */
 const TABS = [
@@ -712,6 +735,9 @@ function startApp(me) {
   $('#main').innerHTML = emptyHtml(t('loading'));
   setSync('busy');
   sync.start();
+  setSignedIn(true);
+  mountMenu({ onTutorial: runTour });
+  tourOnce('library', () => setTimeout(runTour, S.loaded ? 0 : 1500));
 }
 function stopApp() {
   sync.stop();
@@ -720,6 +746,7 @@ function stopApp() {
   RequestsView.q = SlipsView.q = LogView.q = VisitorsView.q = null;
   AdminView.reset?.();
   closeAllSheets();
+  setSignedIn(false);
   $('#app').style.display = 'none';
 }
 

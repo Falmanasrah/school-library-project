@@ -6,7 +6,7 @@ const APPS = [
   { key: 'library', path: '/library/', icon: '/library/icons/icon-192.png', color: '#1f7a5a',
     en: ['Library Teachers App', 'Visits, approvals, permission slips and administration'], ar: ['تطبيق معلمي المكتبة', 'الزيارات والموافقات والأذونات والإدارة'] },
   { key: 'supervisors', path: '/supervisors/', icon: '/supervisors/icons/icon-192.png', color: '#9a5d00',
-    en: ['Floor Supervisors App', 'Send permission slips to the library'], ar: ['تطبيق مشرفي الطوابق', 'أرسل أذونات الطلاب إلى المكتبة'] }
+    en: ['Floor Supervisors App', 'Send permission slips to the library'], ar: ['تطبيق مشرفي الطوابق', 'أرسل أذونات الطلبة إلى المكتبة'] }
 ];
 const TXT = {
   en: { title: 'Choose your app', sub: 'Each app is for a different job. You can switch any time with the Apps button.', btn: 'Apps', here: 'You are here', install: 'Install on a device' },

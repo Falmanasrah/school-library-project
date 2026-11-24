@@ -6,6 +6,7 @@ import {
 } from '/shared/core.js';
 import { createAuth, AUTH_I18N } from '/shared/auth.js';
 import { slipHtml } from '/shared/forms.js';
+import { startTour, tourOnce, mountMenu, setSignedIn } from '/shared/guide.js';
 
 const SUP_I18N = {
   en: {
@@ -31,17 +32,17 @@ const SUP_I18N = {
     err_SIGNATURE_REQUIRED: 'Tick the authorisation box to sign the slip.', err_NOT_CANCELLABLE: 'This slip can no longer be cancelled.', err_TRY_AGAIN: 'Please try again.'
   },
   ar: {
-    appTitle: 'مشرفو الطوابق', loginSub: 'أذونات المكتبة الإلكترونية للطلاب', roleName: 'مشرف طابق',
+    appTitle: 'مشرفو الطوابق', loginSub: 'أذونات المكتبة الإلكترونية للطلبة', roleName: 'مشرف/ة طابق',
     signedInAs: (n) => `مسجّل الدخول باسم ${n}`, version: (v) => `تطبيق مشرفي الطوابق · الإصدار ${v} · يتم التحديث تلقائيًا`,
     tabNew: 'إذن جديد', tabMine: 'أذوناتي',
     newTitle: 'إذن استخدام المكتبة من قبل الطلبة', today: 'اليوم', dateDay: 'اليوم والتاريخ',
-    studentName: 'اسم الطالب/ة', studentId: 'رقم الطالب', grade: 'الصف / الشعبة', teacherName: 'اسم المعلم/ة', library: 'المكتبة',
+    studentName: 'اسم الطالب/ة', studentId: 'الرقم المدرسي للطالب/ة', grade: 'الصف / الشعبة', teacherName: 'اسم المعلم/ة', library: 'المكتبة',
     reason: 'سبب زيارة المكتبة', reasonOther: 'اكتب السبب', notes: 'ملاحظات', optional: '(اختياري)', required: '(مطلوب)',
     reason_borrow_return: 'استعارة / إرجاع كتاب', reason_reading: 'قراءة', reason_research: 'بحث / مشروع', reason_study: 'دراسة', reason_other: 'أخرى',
-    authorize: 'أسمح لهذا الطالب بالذهاب إلى المكتبة', signedBy: (n) => `التوقيع الإلكتروني: ${n}`,
+    authorize: 'أسمح لهذا الطالب/ة بالذهاب إلى المكتبة', signedBy: (n) => `التوقيع الإلكتروني: ${n}`,
     send: 'إرسال الإذن إلى المكتبة', sending: 'جارٍ الإرسال…', signRequired: 'حدد مربع السماح لتوقيع الإذن.',
-    fillRequired: 'يرجى كتابة اسم الطالب والصف واسم المعلم.', chooseLibrary: 'اختر المكتبة.', chooseReason: 'اختر سبب الزيارة.',
-    sentTitle: 'تم إرسال الإذن إلى المكتبة', sentHint: 'أعطِ الطالب هذا الرمز. سيتحقق منه معلم المكتبة عند وصول الطالب.',
+    fillRequired: 'يرجى كتابة اسم الطالب/ة والصف واسم المعلم/ة.', chooseLibrary: 'اختر المكتبة.', chooseReason: 'اختر سبب الزيارة.',
+    sentTitle: 'تم إرسال الإذن إلى المكتبة', sentHint: 'أعطِ الطالب/ة هذا الرمز. سيتحقق منه معلم/ة المكتبة عند وصوله إلى المكتبة.',
     newSlip: 'إذن جديد', printSlip: 'طباعة الإذن', close: 'إغلاق',
     mySlips: 'أذوناتي', date: 'التاريخ', showDate: 'عرض', noSlips: 'لا توجد أذونات في هذا اليوم.',
     st_sent: 'مُرسل', st_received: 'مُستلم', st_used: 'مُستخدم', st_rejected: 'مرفوض', st_cancelled: 'ملغى', st_expired: 'منتهي',
@@ -237,7 +238,25 @@ const sync = createSync(api, 'supervisor.sync', {
   onError: (e) => { if (!S.loaded) $('#main').innerHTML = `<div class="empty">${esc(errorText(e, i18n))}</div>`; }
 });
 
+function runTour() {
+  const back = S.tab;
+  const tab = (k) => () => document.querySelector(`#tabs [data-tab="${k}"]`);
+  startTour([
+    { before: () => showTab('new'), el: tab('new'), title: ['New slip', 'إذن جديد'], text: ['Fill in a permission slip here when a student needs to go to the library.', 'من هون بتعبّي إذن لما يحتاج طالب يروح على المكتبة.'] },
+    { el: '#sName', title: ['Student name', 'اسم الطالب/ة'], text: ["Type the student's name, then the grade and the teacher's name below it.", 'اكتب اسم الطالب، وبعدين الصف واسم المعلم/ة تحته.'] },
+    { el: () => document.querySelector('input[name="sLib"]')?.closest('.choice-row'), title: ['Which library', 'أي مكتبة'], text: ['Choose the library the student is going to.', 'اختار المكتبة اللي رايح عليها الطالب.'] },
+    { el: '.reason-row', title: ["Visit's reason", 'سبب الزيارة'], text: ['Pick why the student is going. Choose Other to write your own reason.', 'اختار ليش رايح الطالب. اختار «أخرى» إذا بدك تكتب السبب بنفسك.'] },
+    { el: '.sign-box', title: ['Sign the slip', 'وقّع الإذن'], text: ['Tick this box. It is your signature on the slip.', 'علّم على هذا المربع، هذا هو توقيعك على الإذن.'] },
+    { el: '#sSend', title: ['Send', 'إرسال'], text: ['The slip reaches the library at once. Give the student the 4-character code that appears.', 'الإذن بوصل المكتبة فورًا. أعطِ الطالب الرمز (4 خانات) اللي بطلعلك.'] },
+    { el: tab('mine'), title: ['My slips', 'أذوناتي'], text: ['Follow each slip: received by the library, student arrived, or rejected. You can print or cancel a slip here.', 'تابع كل إذن: استلمته المكتبة، وصل الطالب، أو انرفض. ومن هون بتقدر تطبع الإذن أو تلغيه.'] },
+    { el: '#menuBtn', title: ['Menu', 'القائمة'], text: ['Language, dark mode, your password, sign out, and this tutorial again are all here.', 'اللغة، الوضع الداكن، كلمة المرور، تسجيل الخروج، وهذا الشرح مرة ثانية، كلهم هون.'] }
+  ], { onEnd: () => showTab(back) });
+}
+
 function startApp(me) {
+  setSignedIn(true);
+  mountMenu({ onTutorial: runTour });
+  tourOnce('supervisors', () => setTimeout(runTour, S.loaded ? 0 : 1500));
   S.me = me; S.d = null; S.loaded = false; S.viewDate = null; S.known = new Map();
   $('#loginView').style.display = 'none';
   $('#app').style.display = 'flex';
@@ -247,7 +266,7 @@ function startApp(me) {
   setSync('busy');
   sync.start();
 }
-function stopApp() { sync.stop(); S.me = null; S.d = null; S.loaded = false; current = null; closeAllSheets(); $('#app').style.display = 'none'; }
+function stopApp() { setSignedIn(false); sync.stop(); S.me = null; S.d = null; S.loaded = false; current = null; closeAllSheets(); $('#app').style.display = 'none'; }
 
 const auth = createAuth({
   root: $('#loginView'), api, i18n, iconSvg: LOGO,

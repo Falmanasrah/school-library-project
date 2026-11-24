@@ -1,0 +1,27 @@
+/* Tutorial spotlight and header Menu (shared by the three apps). */
+.tour-block { position: fixed; inset: 0; z-index: 1000; background: transparent; }
+.tour-hole { position: fixed; z-index: 1001; pointer-events: none; box-shadow: 0 0 0 200vmax rgba(8, 9, 10, 0.74); outline: 3px solid #ffd23f; outline-offset: 0; transition: left .2s ease, top .2s ease, width .2s ease, height .2s ease; }
+.tour-tip { position: fixed; z-index: 1002; width: min(360px, calc(100vw - 16px)); background: var(--surface, #fff); color: var(--ink, #121315); border: 2px solid var(--ink, #121315); padding: 14px 16px 12px; }
+.tour-tip h3 { margin: 2px 0 6px; font-family: var(--font-head, Arial); font-size: 19px; line-height: 1.2; }
+.tour-tip p { margin: 0 0 12px; font-size: 14.5px; line-height: 1.5; }
+.tour-count { font-size: 12px; font-weight: 700; color: var(--ink-soft, #484b50); }
+.tour-btns { display: flex; align-items: center; gap: 6px; }
+.tour-gap { flex: 1; }
+.tour-btns button { height: 36px; padding: 0 14px; border: 1px solid var(--ink, #121315); background: var(--surface, #fff); color: var(--ink, #121315); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.tour-btns .tour-next { background: var(--brand, #114b7a); border-color: var(--brand, #114b7a); color: var(--on-brand, #fff); }
+.tour-btns .tour-skip { border: 0; padding: 0 4px; text-decoration: underline; background: transparent; color: var(--ink-soft, #484b50); font-weight: 500; }
+
+.menu-btn { gap: 6px; font-weight: 700; }
+.menu-pop { position: fixed; z-index: 450; min-width: 250px; background: var(--surface, #fff); border: 2px solid var(--ink, #121315); padding: 4px 0; }
+.menu-pop button { display: flex; align-items: center; gap: 11px; width: 100%; padding: 11px 14px; border: 0; background: transparent; color: var(--ink, #121315); font: inherit; font-size: 14px; text-align: start; cursor: pointer; }
+.menu-pop button:hover, .menu-pop button:focus-visible { background: var(--page, #ececea); outline: none; }
+.menu-pop button.sep { border-top: 1px solid var(--line, #d6d6d2); margin-top: 4px; }
+.menu-pop button.danger { color: var(--red, #b1201a); }
+.menu-pop svg { flex: none; }
+
+/* Signed in: language, theme, apps, password, install and sign-out all live in the Menu. */
+body.in-app .util-bar, body.in-app .install-bar, body.in-app #passwordBtn, body.in-app #logoutBtn { display: none !important; }
+body.in-app.has-install-bar { padding-bottom: 0; }
+body.in-app #app { padding-bottom: 0; }
+@media (max-width: 640px) { .menu-btn span { display: none; } }
+@media print { .tour-block, .tour-hole, .tour-tip, .menu-pop { display: none !important; } }

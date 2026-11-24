@@ -1,6 +1,6 @@
 // Shared client library for the three school library apps.
 // Each app imports this module but keeps its own session, interface and navigation.
-export const VERSION = '2.1.1';
+export const VERSION = '2.2.0';
 
 /* ---------------- text & html ---------------- */
 export function esc(v) {
@@ -71,9 +71,12 @@ export function fmtDuration(ms, i18n) {
   if (ms < 0) ms = 0;
   const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000), m = Math.floor(ms % 3600000 / 60000);
   const ar = i18n.lang === 'ar';
-  if (d > 0) return ar ? `${d} يوم ${h} ساعة` : `${d}d ${h}h`;
-  if (h > 0) return ar ? `${h} ساعة ${m} دقيقة` : `${h}h ${m}m`;
-  return ar ? `${Math.max(m, 1)} دقيقة` : `${Math.max(m, 1)}m`;
+  // Arabic counted nouns: 1 يوم, 2 يومان, 3–10 أيام, 11+ يومًا (same for hours and minutes).
+  const n = (x, one, two, few, many) => (x === 1 ? one : x === 2 ? two : x <= 10 ? `${x} ${few}` : `${x} ${many}`);
+  const D = (x) => n(x, 'يوم', 'يومان', 'أيام', 'يومًا'), H = (x) => n(x, 'ساعة', 'ساعتان', 'ساعات', 'ساعة'), M = (x) => n(x, 'دقيقة', 'دقيقتان', 'دقائق', 'دقيقة');
+  if (d > 0) return ar ? (h ? `${D(d)} و${H(h)}` : D(d)) : `${d}d ${h}h`;
+  if (h > 0) return ar ? (m ? `${H(h)} و${M(m)}` : H(h)) : `${h}h ${m}m`;
+  return ar ? M(Math.max(m, 1)) : `${Math.max(m, 1)}m`;
 }
 
 /* ---------------- API client ---------------- */
@@ -282,7 +285,10 @@ export function printHtml(html) {
   document.body.classList.add('printing');
   const done = () => { document.body.classList.remove('printing'); area.innerHTML = ''; window.removeEventListener('afterprint', done); };
   window.addEventListener('afterprint', done);
-  setTimeout(() => { window.print(); setTimeout(done, 1000); }, 50);
+  // Wait for the school header image (and any other image) before opening the print dialog.
+  const imgs = [...area.querySelectorAll("img")];
+  Promise.all(imgs.map(i => (i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; }))))
+    .then(() => setTimeout(() => { window.print(); setTimeout(done, 1000); }, 50));
 }
 
 /* ---------------- automatic updates ---------------- */
@@ -372,14 +378,14 @@ export const COMMON_I18N = {
     err_NOT_FOUND: 'That record no longer exists.'
   },
   ar: {
-    installBarText: 'ثبّت هذا كتطبيق على جهازك', installBarBtn: 'تثبيت', installTitle: 'تثبيت التطبيق',
+    installBarText: 'ثبّت هذا التطبيق على جهازك', installBarBtn: 'تثبيت', installTitle: 'تثبيت التطبيق',
     installBody: (n) => `أضف ${n} إلى الشاشة الرئيسية أو سطح المكتب للوصول السريع مثل أي تطبيق عادي. يتم تحديثه تلقائيًا.`,
     iosStepsBody: 'اضغط على أيقونة <b>المشاركة</b> في سفاري (المربع الذي عليه سهم)، ثم اختر <b>«إضافة إلى الشاشة الرئيسية»</b>.',
     fallbackStepsBody: 'افتح قائمة المتصفح (⋮ أو ⋯) واختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>.',
     gotIt: 'حسنًا', cancel: 'إلغاء', close: 'إغلاق', save: 'حفظ', confirm: 'تأكيد', signOut: 'تسجيل الخروج',
     synced: 'مباشر', syncing: 'جارٍ المزامنة…', offline: 'غير متصل', syncError: 'مشكلة في الاتصال',
     connBanner: 'لا يوجد اتصال بالإنترنت — لا يمكن حفظ التغييرات الآن',
-    junior: 'المكتبة الابتدائية', senior: 'مكتبة المرحلة المتوسطة والثانوية', juniorShort: 'الابتدائية', seniorShort: 'المتوسطة والثانوية',
+    junior: 'مكتبة الصفوف الدنيا', senior: 'مكتبة الصفوف العليا', juniorShort: 'الصفوف الدنيا', seniorShort: 'الصفوف العليا',
     arabic: 'عربي', english: 'إنجليزي',
     err_NETWORK: 'تعذر الوصول إلى الخادم. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.',
     err_OFFLINE: 'أنت غير متصل. اتصل بالإنترنت وحاول مرة أخرى.',

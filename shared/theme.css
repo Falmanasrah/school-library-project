@@ -302,3 +302,7 @@ td.slot .slot-name { font-size: 10.5px; }
 @media print {
   .util-bar, .install-bar { display: none !important; }
 }
+
+/* ---------- one place for Print and Download on every page ---------- */
+.out-group { display: inline-flex; gap: 6px; margin-inline-start: auto; padding-inline-start: 10px; border-inline-start: 1px solid var(--line-strong); }
+.page-head .btn-row .out-group { margin-inline-start: 6px; }

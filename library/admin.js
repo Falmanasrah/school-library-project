@@ -89,7 +89,7 @@ const Accounts = {
         <div class="fg grow"><label for="aText">${esc(t('search'))}</label><input id="aText" value="${esc(this.q.text)}" placeholder="${esc(t('name'))}, ${esc(t('username'))}, ${esc(t('email'))}" /></div>
         <div class="fg"><label for="aRole">${esc(t('roles'))}</label><select id="aRole"><option value="all">${esc(t('allRoles'))}</option>${ROLES.map(r => `<option value="${r}"${this.q.role === r ? ' selected' : ''}>${esc(t('role_' + r))}</option>`).join('')}</select></div>
         <div class="fg"><label for="aStatus">${esc(t('status'))}</label><select id="aStatus">${st.map(s => `<option value="${s}"${this.q.status === s ? ' selected' : ''}>${esc(s === 'all' ? t('allStatuses') : s === 'locked' ? t('locked') : s === 'attention' ? t('needsAttention') : t('st_' + s))}</option>`).join('')}</select></div>
-        <button class="btn primary" type="button" data-act="new">＋ ${esc(t('newAccount'))}</button><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div>
+        <button class="btn primary" type="button" data-act="new">＋ ${esc(t('newAccount'))}</button><div class="out-group"><button class="btn" type="button" data-act="csv">${esc(t('exportCsv'))}</button></div></div>
       <div id="accRes">${emptyHtml(t('loading'))}</div>`;
     const re = () => { this.q.text = $('#aText', box).value.trim(); this.q.role = $('#aRole', box).value; this.q.status = $('#aStatus', box).value; this.renderList(); };
     $('#aText', box).oninput = re; $('#aRole', box).onchange = re; $('#aStatus', box).onchange = re;
@@ -285,7 +285,7 @@ const Bookings = {
         <div class="fg"><label for="bStatus">${esc(t('status'))}</label><select id="bStatus">${st.map(s => `<option value="${s}"${this.q.status === s ? ' selected' : ''}>${esc(s === 'all' ? t('allStatusesB') : t('st_' + s))}</option>`).join('')}</select></div>
         <div class="fg grow"><label for="bText">${esc(t('search'))}</label><input id="bText" value="${esc(this.q.text)}" placeholder="${esc(t('searchPh'))}" /></div>
         <button class="btn primary" type="button" data-act="bsearch">${esc(t('search'))}</button>
-        <button class="btn" type="button" data-act="badd">＋ ${esc(t('addBooking'))}</button><button class="btn" type="button" data-act="bcsv">${esc(t('exportCsv'))}</button></div>
+        <button class="btn" type="button" data-act="badd">＋ ${esc(t('addBooking'))}</button><div class="out-group"><button class="btn" type="button" data-act="bcsv">${esc(t('exportCsv'))}</button></div></div>
       <div id="bRes">${emptyHtml(t('loading'))}</div>`;
     $('#bText', box).onkeydown = (e) => { if (e.key === 'Enter') this.search(false); };
     this.search(true);
@@ -517,7 +517,7 @@ const Audit = {
         <div class="fg"><label for="lTo">${esc(t('to'))}</label><input type="date" id="lTo" value="${esc(this.q.to)}" /></div>
         <div class="fg"><label for="lCat">${esc(t('auditCat'))}</label><select id="lCat">${cats.map(([v, k]) => `<option value="${v}"${this.q.action === v ? ' selected' : ''}>${esc(t(k))}</option>`).join('')}</select></div>
         <div class="fg grow"><label for="lText">${esc(t('search'))}</label><input id="lText" value="${esc(this.q.text)}" /></div>
-        <button class="btn primary" type="button" data-act="lsearch">${esc(t('search'))}</button><button class="btn" type="button" data-act="lcsv">${esc(t('exportCsv'))}</button></div>
+        <button class="btn primary" type="button" data-act="lsearch">${esc(t('search'))}</button><div class="out-group"><button class="btn" type="button" data-act="lcsv">${esc(t('exportCsv'))}</button></div></div>
       <div id="lRes">${emptyHtml(t('loading'))}</div>`;
     $('#lText', box).onkeydown = (e) => { if (e.key === 'Enter') this.search(false); };
     this.search(true);

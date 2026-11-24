@@ -6,6 +6,19 @@
    ========================================================= */
 import { VERSION, createApi, createSync, createI18n, mergeDicts, COMMON_I18N, esc, errorText, confirmDialog, openSheet, fmtDuration, store, setupAutoUpdate } from './shared/core.js';
 import { createAuth, AUTH_I18N } from './shared/auth.js';
+import { startTour, tourOnce, mountMenu, setSignedIn } from './shared/guide.js';
+
+function runTour() {
+  startTour([
+    { el: '#libTabs', title: ['Choose the library', 'اختار المكتبة'], text: ['First pick the library you want to book.', 'أول إشي اختار المكتبة اللي بدك تحجزها.'] },
+    { el: '#weekPills', title: ['This week or next week', 'هذا الأسبوع أو الأسبوع الجاي'], text: ['Choose the week. The arrows next to the week name move one week at a time.', 'اختار الأسبوع. والأسهم جنب اسم الأسبوع بتنقلك أسبوع أسبوع.'] },
+    { el: () => document.querySelector('#ttTable .slot.available') || document.getElementById('ttTable'), title: ['Book a period', 'احجز حصة'], text: ['Press an empty square (day and period) to book it. Your request goes to the library teachers for approval.', 'اضغط على مربع فاضي (اليوم والحصة) عشان تحجزه. طلبك بروح لمعلمي المكتبة للموافقة.'] },
+    { el: '.legend', title: ['What the colours mean', 'شو معنى الألوان'], text: ['Green is yours, yellow is waiting for approval, red is booked by someone else.', 'الأخضر إلك، الأصفر بانتظار الموافقة، والأحمر محجوز لمعلم/ة ثاني/ة.'] },
+    { el: '#periodBanner', title: ['Booking period', 'فترة الحجز'], text: ['Booking is only open for 7 days at a time. This line tells you when it closes.', 'الحجز بكون مفتوح 7 أيام بس كل مرة. هذا السطر بحكيلك إيمتى بسكّر.'] },
+    { el: '#myList', title: ['Your bookings', 'حجوزاتك'], text: ['See whether each request was approved. Press Cancel to free a slot you no longer need.', 'هون بتشوف إذا انقبل طلبك. اضغط «إلغاء» إذا ما عدت بحاجة للحصة.'] },
+    { el: '#menuBtn', title: ['Menu', 'القائمة'], text: ['Language, dark mode, your password, sign out, and this tutorial again are all here.', 'اللغة، الوضع الداكن، كلمة المرور، تسجيل الخروج، وهذا الشرح مرة ثانية، كلهم هون.'] }
+  ]);
+}
 
 /* =========================================================
    TRANSLATIONS
@@ -100,7 +113,7 @@ const APP_I18N = {
   },
   ar: {
     loginTitle: 'حجز المكتبة',
-    loginSub: 'المعلمون — سجّل الدخول بحساب الموظف الخاص بك',
+    loginSub: 'للمعلمين — سجّل/ي الدخول بحساب الموظف الخاص بك',
     roleName: 'معلم',
     headerSub: 'تقويم مشترك — يراه جميع المعلمين',
     connBanner: 'لا يوجد اتصال بالإنترنت — لا يمكن مزامنة الحجوزات الآن',
@@ -108,10 +121,10 @@ const APP_I18N = {
     syncing: 'جارٍ المزامنة…',
     offline: 'غير متصل',
     signOut: 'تسجيل الخروج',
-    juniorLib: 'المكتبة الابتدائية',
-    juniorLibSub: 'أقل من الصف السابع',
-    seniorLib: 'مكتبة المرحلة المتوسطة والثانوية',
-    seniorLibSub: 'الصف السابع فما فوق',
+    juniorLib: 'مكتبة الصفوف الدنيا',
+    juniorLibSub: 'حتى الصف السادس',
+    seniorLib: 'مكتبة الصفوف العليا',
+    seniorLibSub: 'من الصف السابع فما فوق',
     thisWeek: 'هذا الأسبوع',
     nextWeek: 'الأسبوع القادم',
     weekAhead: (n) => `بعد ${n} ${n === 1 ? 'أسبوع' : 'أسابيع'}`,
@@ -132,12 +145,12 @@ const APP_I18N = {
     leavingAt: 'وقت المغادرة',
     gradeSection: 'الصف / الشعبة',
     gradeSectionPh: 'مثال: 5B',
-    studentsCount: 'عدد الطلاب',
+    studentsCount: 'عدد الطلبة',
     classLang: 'حصة عربي / إنجليزي',
     notesOptional: 'ملاحظات (اختياري)',
     notesPh: 'مثال: بحث لمشروع العلوم',
     timeErr: 'أدخل الوقتين، على أن يكون وقت المغادرة بعد وقت الوصول',
-    classErr: 'أدخل الصف / الشعبة وعدد الطلاب',
+    classErr: 'أدخل الصف / الشعبة وعدد الطلبة',
     pastSlotErr: 'لا يمكن حجز موعد في وقت مضى',
     pastTimeErr: 'الوقت المحدد قد مضى اليوم',
     cancel: 'إلغاء',
@@ -154,7 +167,7 @@ const APP_I18N = {
     yesBookIt: 'نعم، أرسل الطلب',
     booking: 'جارٍ الإرسال…',
     arrivesLeaves: (a, l) => `الوصول ${a} · المغادرة ${l}`,
-    periodClassLine: (p, cls, n, lang) => `الحصة ${p} · ${cls} · ${n} طالب · حصة ${lang}`,
+    periodClassLine: (p, cls, n, lang) => `الحصة ${p} · ${cls} · ${n} طالب/ة · حصة ${lang}`,
     remove: 'إلغاء',
     cancelBookingTitle: 'إلغاء هذا الحجز؟',
     cancelBookingBody: 'سيصبح الموعد متاحًا لبقية المعلمين.',
@@ -347,6 +360,7 @@ class App {
   }
 
   stopApp() {
+    setSignedIn(false);
     this.me = null;
     this.sync.stop();
     document.getElementById('app').style.display = 'none';
@@ -367,6 +381,9 @@ class App {
     this.setSyncState('busy');
     this.renderAll();
     this.sync.start();
+    setSignedIn(true);
+    mountMenu({ onTutorial: runTour });
+    tourOnce('teachers', () => setTimeout(runTour, this.loaded ? 0 : 1500));
   }
 
   onSync(d) {

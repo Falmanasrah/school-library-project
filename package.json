@@ -1,6 +1,6 @@
 {
   "name": "school-library-system",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "private": true,
   "description": "School library system: Teachers App, Library Teachers App and Floor Supervisors App with a shared secure backend.",
   "type": "module",
